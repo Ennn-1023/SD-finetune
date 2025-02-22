@@ -393,11 +393,11 @@ class ImageLogger(Callback):
             return True
         return False
 
-    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
+    def on_train_epoch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
         if not self.disabled and (pl_module.global_step > 0 or self.log_first_step):
             self.log_img(pl_module, batch, batch_idx, split="train")
 
-    def on_validation_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
+    def on_validation_epoch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
         if not self.disabled and pl_module.global_step > 0:
             self.log_img(pl_module, batch, batch_idx, split="val")
         if hasattr(pl_module, 'calibrate_grad_norm'):
@@ -429,7 +429,7 @@ class CUDACallback(Callback):
 
 if __name__ == "__main__":
 
-    now ="2023-02-08" # FIXED TO AVOID WASTING SPACE
+    now ="2025-02-22" # FIXED TO AVOID WASTING SPACE
 
     # add cwd for convenience and to make classes in this file available when
     # running as `python main.py`
