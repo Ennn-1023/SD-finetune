@@ -73,14 +73,14 @@ data:
     train:
       target: ldm.data.inpainting_dataset.InpaintingTrain
       params:
-        csv_file: data/train.csv
-        data_root: data/train_data
+        csv_file: ./data/train.csv
+        data_root: ./data/train_data
         size: 512
     validation:
       target: ldm.data.inpainting_dataset.InpaintingValidation
       params:
-        csv_file: data/val.csv
-        data_root: data/val_data
+        csv_file: ./data/val.csv
+        data_root: ./data/val_data
         size: 512
 
 
