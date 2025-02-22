@@ -383,7 +383,7 @@ class DDPM(pl.LightningModule):
         self.log_dict(loss_dict_ema, prog_bar=False, logger=True, on_step=False, on_epoch=True)
 
     def on_train_batch_end(self, *args, **kwargs):
-        print("ACTUAL LEARNING RATE %s" % self.optimizers().param_groups[0]['lr'])
+        # print("ACTUAL LEARNING RATE %s" % self.optimizers().param_groups[0]['lr'])
         if self.use_ema:
             self.model_ema(self.model)
 
