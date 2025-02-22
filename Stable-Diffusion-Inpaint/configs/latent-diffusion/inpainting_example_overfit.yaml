@@ -91,7 +91,7 @@ lightning:
     image_logger:
       target: main_inpainting.ImageLogger
       params:
-        disabled: False
+        disabled: True
         batch_frequency: 750
         max_images: 4
         increase_log_steps: True
