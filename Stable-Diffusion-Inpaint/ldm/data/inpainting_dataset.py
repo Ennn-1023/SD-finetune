@@ -10,6 +10,12 @@ import torch
 from einops import rearrange
 import cv2 
 
+'''
+update InpaintingBase._transform_and_normalize_inference()
+update InpaintingBase.__getitem__(), InpaintingBase.labels
+'''
+
+
 class InpaintingBase(Dataset):
     def __init__(self,
                  csv_file,
@@ -36,6 +42,9 @@ class InpaintingBase(Dataset):
 
         self.image_paths = self.csv_df["image_path"]
         self.mask_image = self.csv_df["mask_path"]
+        # add fixed path
+        self.fixed_image = self.csv_df["fixed_path"]
+        # update labels(add fixed path)
         self.labels = {
             "relative_file_path_": [l for l in self.image_paths],
             "file_path_": [os.path.join(self.data_root, l)
@@ -43,6 +52,9 @@ class InpaintingBase(Dataset):
             "relative_file_path_mask_": [l for l in self.mask_image],
             "file_path_mask_": [os.path.join(self.data_root, l)
                            for l in self.mask_image],
+            "relative_file_path_fixed_": [l for l in self.fixed_image],
+            "file_path_fixed_": [os.path.join(self.data_root, l)
+                           for l in self.fixed_image],
         }
 
     def __len__(self):
@@ -70,8 +82,11 @@ class InpaintingBase(Dataset):
         # masked_image = rearrange(masked_image, 'c h w -> h w c')
 
         return image, masked_image, pil_mask
-
-    def _transform_and_normalize_inference(self, image_path, mask_path, resize_to):
+    '''
+    add feature: masked image reading from path
+    add fixed_path as input
+    '''
+    def _transform_and_normalize_inference(self, image_path, fixed_path, mask_path, resize_to):
         image = np.array(Image.open(image_path).convert("RGB"))
         
         if image.shape[0]!=resize_to or image.shape[1]!=resize_to:
@@ -92,7 +107,14 @@ class InpaintingBase(Dataset):
         mask[mask >= 0.5] = 1
         mask = torch.from_numpy(mask)
 
-        masked_image = (1-mask)*image
+        # ---changed part---
+        masked_image = np.array(Image.open(fixed_path).convert("RGB"))
+        if masked_image.shape[0]!=resize_to or masked_image.shape[1]!=resize_to:
+            masked_image = cv2.resize(src=masked_image, dsize=(resize_to,resize_to), interpolation = cv2.INTER_AREA)
+        masked_image = masked_image.astype(np.float32)/255.0
+        masked_image = masked_image[None].transpose(0,3,1,2)
+        masked_image = torch.from_numpy(masked_image)
+        # ---
 
         batch = {"image": image, "mask": mask, "masked_image": masked_image}
 
@@ -111,7 +133,7 @@ class InpaintingBase(Dataset):
     
         example2 = dict((k, self.labels[k][i]) for k in self.labels)
 
-        add_dict = self._transform_and_normalize_inference(example2["file_path_"],example2["file_path_mask_"], resize_to=self.size)
+        add_dict = self._transform_and_normalize_inference(example2["file_path_"], example2["file_path_fixed_"],example2["file_path_mask_"], resize_to=self.size)
         
         example2.update(add_dict)
 
