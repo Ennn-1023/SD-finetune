@@ -1,0 +1,7 @@
+image,mask,partition
+DejaVuSans.ttf,DejaVuSans.ttf,train
+INPAINTING,INPAINTING,train
+create_custom_dataframe_from_folder.py,create_custom_dataframe_from_folder.py,train
+llama_generation_sample,llama_generation_sample,train
+samples,samples,train
+test_loader_inpaint,test_loader_inpaint,train
