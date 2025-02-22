@@ -98,8 +98,8 @@ lightning:
         log_first_step: True
         log_images_kwargs:
           use_ema_scope: False
-          plot_progressive_rows: True
-          plot_diffusion_rows: True
+          plot_progressive_rows: False # disable this for training
+          plot_diffusion_rows: False # disable this for training
           N: 4
           unconditional_guidance_scale: 1.0
           unconditional_guidance_label: [""]
