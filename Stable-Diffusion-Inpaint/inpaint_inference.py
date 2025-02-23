@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
     masks = sorted(glob.glob(os.path.join(opt.indir, "*_mask.*")))
 
-    images = [x.replace("_mask.jpg", ".jpg") for x in masks]
+    images = [x.replace("_mask.jpg", "_raw.jpg") for x in masks]
 
 
     print(f"Found {len(masks)} inputs.")
