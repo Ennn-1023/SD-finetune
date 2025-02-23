@@ -30,8 +30,8 @@ def make_batch(image, mask, masked_image, device="cuda:0", resize_to = None):
     masked_image = resize_if(masked_image, resize_to)
 
     masked_image = masked_image.astype(np.float32)/255.0
-    masked_image = image[None].transpose(0,3,1,2)
-    masked_image = torch.from_numpy(image)
+    masked_image = masked_image[None].transpose(0,3,1,2)
+    masked_image = torch.from_numpy(masked_image)
     # masked_image = (1-mask)*image
 
     batch = {"image": image, "mask": mask, "masked_image": masked_image}
