@@ -90,7 +90,7 @@ if __name__ == "__main__":
     masks = sorted(glob.glob(os.path.join(opt.indir, "*_mask.*")))
 
     images = [x.replace("_mask.jpg", "_raw.jpg") for x in masks]
-
+    fixeds = [x.replace("_mask.jpg", "_fixed.jpg") for x in masks]
 
     print(f"Found {len(masks)} inputs.")
 
@@ -115,10 +115,10 @@ if __name__ == "__main__":
     
     with torch.no_grad():
         with scope("Sampling"):
-            for image, mask in tqdm(zip(images, masks)):
+            for image, mask, fixed in tqdm(zip(images, masks, fixeds)):
                 outpath = os.path.join(opt.outdir, "%s_%s_%s_%s.jpg" % (os.path.split(image)[1].split(".")[0], opt.prefix, ema_prefix, os.path.basename(opt.ckpt)))
 
-                batch = make_batch(image, mask, device=device, resize_to=opt.resize)
+                batch = make_batch(image, mask, fixed, device=device, resize_to=opt.resize)
                 
                 c_masked = model.cond_stage_model.encode(batch["masked_image"])
                                 
