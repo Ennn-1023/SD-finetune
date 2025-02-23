@@ -84,6 +84,12 @@ if __name__ == "__main__":
         action='store_true',
         help="use ema weights",
     )
+    parser.add_argument(
+        "--white",
+        type=bool,
+        default=False,
+        help="use white part or fixed",
+    )
 
     opt = parser.parse_args()
 
@@ -118,7 +124,7 @@ if __name__ == "__main__":
             for image, mask, fixed in tqdm(zip(images, masks, fixeds)):
                 outpath = os.path.join(opt.outdir, "%s_%s_%s_%s.jpg" % (os.path.split(image)[1].split(".")[0], opt.prefix, ema_prefix, os.path.basename(opt.ckpt)))
 
-                batch = make_batch(image, mask, fixed, device=device, resize_to=opt.resize)
+                batch = make_batch(image, mask, fixed, device=device, resize_to=opt.resize, white_part=opt.white)
                 
                 c_masked = model.cond_stage_model.encode(batch["masked_image"])
                                 

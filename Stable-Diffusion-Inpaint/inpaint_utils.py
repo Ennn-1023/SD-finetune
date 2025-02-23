@@ -8,7 +8,7 @@ def resize_if(image, resize_to):
         image = cv2.resize(src=image, dsize=(resize_to,resize_to), interpolation = cv2.INTER_AREA)
     return image
 
-def make_batch(image, mask, masked_image, device="cuda:0", resize_to = None):
+def make_batch(image, mask, masked_image, device="cuda:0", resize_to = None, white_part = True):
     image = np.array(Image.open(image).convert("RGB"))
     image = resize_if(image, resize_to)
 
@@ -24,15 +24,19 @@ def make_batch(image, mask, masked_image, device="cuda:0", resize_to = None):
     mask[mask < 0.5] = 0
     mask[mask >= 0.5] = 1
     mask = torch.from_numpy(mask)
+    # keep white part
+    if white_part:
+        masked_image = (1-mask)*image
+    else:
+        # ---changed part---
+        masked_image = np.array(Image.open(masked_image).convert("RGB"))
+        masked_image = resize_if(masked_image, resize_to)
 
-    # ---changed part---
-    masked_image = np.array(Image.open(masked_image).convert("RGB"))
-    masked_image = resize_if(masked_image, resize_to)
-
-    masked_image = masked_image.astype(np.float32)/255.0
-    masked_image = masked_image[None].transpose(0,3,1,2)
-    masked_image = torch.from_numpy(masked_image)
-    # masked_image = (1-mask)*image
+        masked_image = masked_image.astype(np.float32)/255.0
+        masked_image = masked_image[None].transpose(0,3,1,2)
+        masked_image = torch.from_numpy(masked_image)
+        # ---
+    # keep white part
 
     batch = {"image": image, "mask": mask, "masked_image": masked_image}
 
