@@ -89,7 +89,9 @@ if __name__ == "__main__":
 
     masks = sorted(glob.glob(os.path.join(opt.indir, "*_mask.*")))
 
-    images = [x.replace("_mask.png", ".png") for x in masks]
+    images = [x.replace("_mask.jpg", ".jpg") for x in masks]
+
+
     print(f"Found {len(masks)} inputs.")
 
     config = OmegaConf.load(opt.yaml_profile)
@@ -114,7 +116,7 @@ if __name__ == "__main__":
     with torch.no_grad():
         with scope("Sampling"):
             for image, mask in tqdm(zip(images, masks)):
-                outpath = os.path.join(opt.outdir, "%s_%s_%s_%s.png" % (os.path.split(image)[1].split(".")[0], opt.prefix, ema_prefix, os.path.basename(opt.ckpt)))
+                outpath = os.path.join(opt.outdir, "%s_%s_%s_%s.jpg" % (os.path.split(image)[1].split(".")[0], opt.prefix, ema_prefix, os.path.basename(opt.ckpt)))
 
                 batch = make_batch(image, mask, device=device, resize_to=opt.resize)
                 
