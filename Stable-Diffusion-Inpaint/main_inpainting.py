@@ -1,4 +1,5 @@
 import argparse, os, sys, datetime, glob, importlib, csv
+import loralib as lora # for lora use
 import numpy as np
 import time
 import torch
@@ -92,6 +93,14 @@ def get_parser(**parser_kwargs):
         "-p",
         "--project",
         help="name of new or path to existing project"
+    )
+    parser.add_argument(
+        "--lora",
+        type=str2bool,
+        const=True,
+        default=False,
+        nargs="?",
+        help="mark only lora as trainable",
     )
     parser.add_argument(
         "-d",
@@ -266,6 +275,7 @@ class SetupCallback(Callback):
             print("Summoning checkpoint keyboard interrupt.")
             ckpt_path = os.path.join(self.ckptdir, "last.ckpt")
             trainer.save_checkpoint(ckpt_path)
+            torch.save(lora.lora_state_dict(pl_module), os.path.join(self.ckptdir, "lora_last.ckpt"))
 
     def on_pretrain_routine_start(self, trainer, pl_module):
         if trainer.global_rank == 0:
@@ -517,6 +527,10 @@ if __name__ == "__main__":
         # model
         model = instantiate_from_config(config.model)
 
+        # mark lora as only trainable
+
+        if opt.lora:
+            lora.mark_only_lora_as_trainable(model, bias='lora_only')
         
         # trainer and callbacks
         trainer_kwargs = dict()
@@ -690,6 +704,7 @@ if __name__ == "__main__":
                 print("Summoning checkpoint melk.")
                 ckpt_path = os.path.join(ckptdir, "last.ckpt")
                 trainer.save_checkpoint(ckpt_path)
+                torch.save(lora.lora_state_dict(model), os.path.join(ckptdir, "lora_last.ckpt"))
 
 
         def divein(*args, **kwargs):
