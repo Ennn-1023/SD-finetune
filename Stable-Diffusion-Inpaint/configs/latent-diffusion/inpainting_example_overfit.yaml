@@ -16,7 +16,7 @@ model:
     concat_mode: true # there will be no context_dim specified in unet,
     monitor: val/loss_simple_ema
     # scale_factor: 0.18215
-    ckpt_path: "models/ldm/inpainting_big/model_compvis.ckpt"
+    ckpt_path: "logs/2025-03-07_large_mask/checkpoints/large_mask-ep634.ckpt" #"models/ldm/inpainting_big/model_compvis.ckpt"
     
     unet_config:
       target: ldm.modules.diffusionmodules.openaimodel.UNetModel
@@ -67,7 +67,7 @@ model:
 data:
   target: main_inpainting.DataModuleFromConfig
   params:
-    batch_size: 2
+    batch_size: 4
     num_workers: 5
     wrap: false
     train:
@@ -91,7 +91,7 @@ lightning:
     image_logger:
       target: main_inpainting.ImageLogger
       params:
-        disabled: True
+        disabled: False
         batch_frequency: 750
         max_images: 4
         increase_log_steps: True
