@@ -549,14 +549,23 @@ class UNetModel(nn.Module):
 
         if self.num_classes is not None:
             self.label_emb = nn.Embedding(num_classes, time_embed_dim)
-
-        self.input_blocks = nn.ModuleList(
-            [
-                TimestepEmbedSequential(
-                    conv_nd(dims, in_channels, model_channels, 3, padding=1)
-                )
-            ]
-        )
+        # add lora
+        if apply_lora:
+            self.input_blocks = nn.ModuleList(
+                [
+                    TimestepEmbedSequential(
+                        lora.Conv2d(in_channels, model_channels, kernel_size=3, padding=1, r=16)
+                    )
+                ]
+            )
+        else:
+            self.input_blocks = nn.ModuleList(
+                [
+                    TimestepEmbedSequential(
+                        conv_nd(dims, in_channels, model_channels, 3, padding=1)
+                    )
+                ]
+            )
         self._feature_size = model_channels
         input_block_chans = [model_channels]
         ch = model_channels
