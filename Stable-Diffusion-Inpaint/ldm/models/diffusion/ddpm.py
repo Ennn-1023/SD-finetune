@@ -1485,15 +1485,17 @@ class LatentInpaintDiffusion(LatentDiffusion):
             # make it explicit, finetune by including extra input channels
             # HERE THE FINETUNED IS INTENDED TO BE IN THE CASE YOU WANT TO ADD MORE THAN
             # CLASSICAL CONDITIONING IN THE INPUT CHANNELS AND YOU WANT TO RETAIN THE KNOWLEDGE FROM BEFORE
-            if exists(self.finetune_keys_to_retain) and k in self.finetune_keys_to_retain:
-                new_entry = None
-                for name, param in self.named_parameters():
-                    if name in self.finetune_keys_to_retain:
-                        print(f"modifying key '{name}' and keeping its original {self.keep_dims} (channels) dimensions only")
-                        new_entry = torch.zeros_like(param)  # zero init
-                assert exists(new_entry), 'did not find matching parameter to modify'
-                new_entry[:, :self.keep_dims, ...] = sd[k]
-                sd[k] = new_entry
+
+            # disabled
+            # if exists(self.finetune_keys_to_retain) and k in self.finetune_keys_to_retain:
+            #     new_entry = None
+            #     for name, param in self.named_parameters():
+            #         if name in self.finetune_keys_to_retain:
+            #             print(f"modifying key '{name}' and keeping its original {self.keep_dims} (channels) dimensions only")
+            #             new_entry = torch.zeros_like(param)  # zero init
+            #     assert exists(new_entry), 'did not find matching parameter to modify'
+            #     new_entry[:, :self.keep_dims, ...] = sd[k]
+            #     sd[k] = new_entry
                 
         missing, unexpected = self.load_state_dict(sd, strict=False) if not only_model else self.model.load_state_dict(sd, strict=False)
         print(f"Restored from {path} with {len(missing)} missing and {len(unexpected)} unexpected keys")
