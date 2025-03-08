@@ -3,6 +3,7 @@ from functools import partial
 import math
 from typing import Iterable
 
+import loralib as lora # add LoRA support
 import numpy as np
 import torch as th
 import torch.nn as nn
@@ -160,6 +161,7 @@ class Downsample(nn.Module):
         return self.op(x)
 
 
+
 class ResBlock(TimestepBlock):
     """
     A residual block that can optionally change the number of channels.
@@ -188,6 +190,8 @@ class ResBlock(TimestepBlock):
         use_checkpoint=False,
         up=False,
         down=False,
+        apply_lora=False,
+        lora_rank=16,  # rank for LoRA
     ):
         super().__init__()
         self.channels = channels
@@ -197,15 +201,67 @@ class ResBlock(TimestepBlock):
         self.use_conv = use_conv
         self.use_checkpoint = use_checkpoint
         self.use_scale_shift_norm = use_scale_shift_norm
-
-        self.in_layers = nn.Sequential(
-            normalization(channels),
-            nn.SiLU(),
-            conv_nd(dims, channels, self.out_channels, 3, padding=1),
-        )
+        # use LoRA
+        if not apply_lora:
+            self.in_layers = nn.Sequential(
+                normalization(channels),
+                nn.SiLU(),
+                conv_nd(dims, channels, self.out_channels, 3, padding=1),
+            )
+            
+            self.emb_layers = nn.Sequential(
+                nn.SiLU(),
+                linear(
+                    emb_channels,
+                    2 * self.out_channels if use_scale_shift_norm else self.out_channels,
+                ),
+            )
+            self.out_layers = nn.Sequential(
+                normalization(self.out_channels),
+                nn.SiLU(),
+                nn.Dropout(p=dropout),
+                zero_module(
+                    conv_nd(dims, self.out_channels, self.out_channels, 3, padding=1)
+                ),
+            )
+            if self.out_channels == channels:
+                self.skip_connection = nn.Identity()
+            elif use_conv:
+                self.skip_connection = conv_nd(
+                    dims, channels, self.out_channels, 3, padding=1
+                )
+            else:
+                self.skip_connection = conv_nd(dims, channels, self.out_channels, 1)
+        else:
+            self.in_layers = nn.Sequential(
+                normalization(channels),
+                nn.SiLU(),
+                lora.Conv2d(channels, self.out_channels, kernel_size=3, padding=1, r=lora_rank),
+            )
+            self.emb_layers = nn.Sequential(
+                nn.SiLU(),
+                lora.Linear(
+                    emb_channels,
+                    2 * self.out_channels if use_scale_shift_norm else self.out_channels,
+                    r=lora_rank
+                ),
+            )
+            self.out_layers = nn.Sequential(
+                normalization(self.out_channels),
+                nn.SiLU(),
+                nn.Dropout(p=dropout),
+                zero_module(
+                    lora.Conv2d(self.out_channels, self.out_channels, kernel_size=3, padding=1, r=lora_rank)
+                ),
+            )
+            if self.out_channels == channels:
+                self.skip_connection = nn.Identity()
+            elif use_conv:
+                self.skip_connection = lora.Conv2d(channels, self.out_channels, kernel_size=3, padding=1, r=lora_rank)
+            else:
+                self.skip_connection = lora.Conv2d(channels, self.out_channels, kernel_size=1, r=lora_rank)
 
         self.updown = up or down
-
         if up:
             self.h_upd = Upsample(channels, False, dims)
             self.x_upd = Upsample(channels, False, dims)
@@ -215,30 +271,6 @@ class ResBlock(TimestepBlock):
         else:
             self.h_upd = self.x_upd = nn.Identity()
 
-        self.emb_layers = nn.Sequential(
-            nn.SiLU(),
-            linear(
-                emb_channels,
-                2 * self.out_channels if use_scale_shift_norm else self.out_channels,
-            ),
-        )
-        self.out_layers = nn.Sequential(
-            normalization(self.out_channels),
-            nn.SiLU(),
-            nn.Dropout(p=dropout),
-            zero_module(
-                conv_nd(dims, self.out_channels, self.out_channels, 3, padding=1)
-            ),
-        )
-
-        if self.out_channels == channels:
-            self.skip_connection = nn.Identity()
-        elif use_conv:
-            self.skip_connection = conv_nd(
-                dims, channels, self.out_channels, 3, padding=1
-            )
-        else:
-            self.skip_connection = conv_nd(dims, channels, self.out_channels, 1)
 
     def forward(self, x, emb):
         """
@@ -449,6 +481,7 @@ class UNetModel(nn.Module):
         out_channels,
         num_res_blocks,
         attention_resolutions,
+        apply_lora=False,
         dropout=0,
         channel_mult=(1, 2, 4, 8),
         conv_resample=True,
@@ -539,6 +572,7 @@ class UNetModel(nn.Module):
                         dims=dims,
                         use_checkpoint=use_checkpoint,
                         use_scale_shift_norm=use_scale_shift_norm,
+                        apply_lora=apply_lora,
                     )
                 ]
                 ch = mult * model_channels
@@ -578,6 +612,7 @@ class UNetModel(nn.Module):
                             use_checkpoint=use_checkpoint,
                             use_scale_shift_norm=use_scale_shift_norm,
                             down=True,
+                            apply_lora=apply_lora,
                         )
                         if resblock_updown
                         else Downsample(
@@ -606,6 +641,7 @@ class UNetModel(nn.Module):
                 dims=dims,
                 use_checkpoint=use_checkpoint,
                 use_scale_shift_norm=use_scale_shift_norm,
+                apply_lora=apply_lora,
             ),
             AttentionBlock(
                 ch,
@@ -623,6 +659,7 @@ class UNetModel(nn.Module):
                 dims=dims,
                 use_checkpoint=use_checkpoint,
                 use_scale_shift_norm=use_scale_shift_norm,
+                apply_lora=apply_lora,
             ),
         )
         self._feature_size += ch
@@ -640,6 +677,7 @@ class UNetModel(nn.Module):
                         dims=dims,
                         use_checkpoint=use_checkpoint,
                         use_scale_shift_norm=use_scale_shift_norm,
+                        apply_lora=apply_lora,
                     )
                 ]
                 ch = model_channels * mult
@@ -675,6 +713,7 @@ class UNetModel(nn.Module):
                             use_checkpoint=use_checkpoint,
                             use_scale_shift_norm=use_scale_shift_norm,
                             up=True,
+                            apply_lora=apply_lora,
                         )
                         if resblock_updown
                         else Upsample(ch, conv_resample, dims=dims, out_channels=out_ch)
