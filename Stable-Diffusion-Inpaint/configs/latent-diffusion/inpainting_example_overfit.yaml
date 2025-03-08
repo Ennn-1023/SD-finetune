@@ -38,6 +38,7 @@ model:
         num_heads: 8
         resblock_updown: true
         use_checkpoint: True # gradient checkpointing
+        apply_lora: False
 
     first_stage_config:
       target: ldm.models.autoencoder.VQModelInterface
