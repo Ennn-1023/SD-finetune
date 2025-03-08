@@ -38,7 +38,7 @@ model:
         num_heads: 8
         resblock_updown: true
         use_checkpoint: True # gradient checkpointing
-        apply_lora: False
+        apply_lora: True
 
     first_stage_config:
       target: ldm.models.autoencoder.VQModelInterface
@@ -74,14 +74,14 @@ data:
     train:
       target: ldm.data.inpainting_dataset.InpaintingTrain
       params:
-        csv_file: ./data/train.csv
-        data_root: ./data/train_data
+        csv_file: ./data/dataset_2025_02/train.csv
+        data_root: ./data/dataset_2025_02/train_data
         size: 512
     validation:
       target: ldm.data.inpainting_dataset.InpaintingValidation
       params:
-        csv_file: ./data/val.csv
-        data_root: ./data/val_data
+        csv_file: ./data/dataset_2025_02/val.csv
+        data_root: ./data/dataset_2025_02/val_data
         size: 512
 
 
