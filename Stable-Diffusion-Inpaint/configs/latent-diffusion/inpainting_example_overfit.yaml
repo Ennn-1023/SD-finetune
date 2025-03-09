@@ -14,7 +14,7 @@ model:
     image_size: 128 # feature map size for 512x512 images
     channels: 3
     concat_mode: true # there will be no context_dim specified in unet,
-    monitor: val/loss_simple_ema
+    monitor: val/loss_simple
     # scale_factor: 0.18215
     ckpt_path: "models/ldm/inpainting_big/model_compvis.ckpt"
     use_ema: False
@@ -38,7 +38,7 @@ model:
         - 4
         num_heads: 8
         resblock_updown: true
-        use_checkpoint: True # gradient checkpointing
+        use_checkpoint: False # gradient checkpointing
         apply_lora: True
 
     first_stage_config:
@@ -70,7 +70,7 @@ data:
   target: main_inpainting.DataModuleFromConfig
   params:
     batch_size: 2
-    num_workers: 5
+    num_workers: 4
     wrap: false
     train:
       target: ldm.data.inpainting_dataset.InpaintingTrain
