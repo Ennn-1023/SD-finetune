@@ -92,7 +92,7 @@ if __name__ == "__main__":
     )
 
     opt = parser.parse_args()
-
+    print(opt)
     masks = sorted(glob.glob(os.path.join(opt.indir, "*_mask.*")))
 
     images = [x.replace("_mask.jpg", "_raw.jpg") for x in masks]
