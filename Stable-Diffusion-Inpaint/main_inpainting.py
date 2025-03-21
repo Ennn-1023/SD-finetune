@@ -719,6 +719,8 @@ if __name__ == "__main__":
         # run
         if opt.train:
             try:
+                import os
+                os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:128'
                 trainer.fit(model, data)
             except Exception:
                 print(traceback.print_exc())

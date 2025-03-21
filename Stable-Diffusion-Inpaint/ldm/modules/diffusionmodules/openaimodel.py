@@ -3,12 +3,13 @@ from functools import partial
 import math
 from typing import Iterable
 
-import loralib as lora # add LoRA support
+
 import numpy as np
 import torch as th
 import torch.nn as nn
 import torch.nn.functional as F
 
+import loralib as lora
 from ldm.modules.diffusionmodules.util import (
     checkpoint,
     conv_nd,
@@ -191,7 +192,7 @@ class ResBlock(TimestepBlock):
         up=False,
         down=False,
         apply_lora=False,
-        lora_rank=16,  # rank for LoRA
+        lora_rank=8,  # rank for LoRA
     ):
         super().__init__()
         self.channels = channels
@@ -322,6 +323,7 @@ class AttentionBlock(nn.Module):
         use_checkpoint=False,
         use_new_attention_order=False,
         apply_lora=False,
+        lora_rank=8,  # rank for LoRA
     ):
         super().__init__()
         self.channels = channels
@@ -338,7 +340,7 @@ class AttentionBlock(nn.Module):
         # disable LoRA for now
         apply_lora = False
         if apply_lora:
-            self.qkv = lora.Conv1d(channels, channels * 3, 1)
+            self.qkv = lora.Conv1d(channels, channels * 3, 1, r=lora_rank)
             self.proj_out = zero_module(lora.Conv1d(channels, channels, 1))
         else:
             self.qkv = conv_nd(1, channels, channels * 3, 1)

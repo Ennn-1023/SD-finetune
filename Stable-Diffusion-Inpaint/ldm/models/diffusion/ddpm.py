@@ -1496,7 +1496,6 @@ class LatentInpaintDiffusion(LatentDiffusion):
             #     assert exists(new_entry), 'did not find matching parameter to modify'
             #     new_entry[:, :self.keep_dims, ...] = sd[k]
             #     sd[k] = new_entry
-                
         missing, unexpected = self.load_state_dict(sd, strict=False) if not only_model else self.model.load_state_dict(sd, strict=False)
         print(f"Restored from {path} with {len(missing)} missing and {len(unexpected)} unexpected keys")
         if len(missing) > 0:
