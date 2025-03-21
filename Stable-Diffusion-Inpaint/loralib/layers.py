@@ -327,7 +327,7 @@ class Conv2d(LoRALayer, nn.Conv2d):
             nn.init.zeros_(self.lora_B)
 
     def train(self, mode=True):
-        nn.conv2d.train(self, mode)
+        nn.Conv2d.train(self, mode)
         if mode:
             if self.merge_weights and self.merged:
                 if self.r > 0:
@@ -379,7 +379,7 @@ class Conv1d(LoRALayer, nn.Conv1d):
             nn.init.zeros_(self.lora_B)
 
     def train(self, mode=True):
-        nn.conv1d.train(self, mode)
+        nn.Conv1d.train(self, mode)
         if mode:
             if self.merge_weights and self.merged:
                 if self.r > 0:
