@@ -38,7 +38,7 @@ model:
         - 4
         num_heads: 8
         resblock_updown: true
-        use_checkpoint: False # gradient checkpointing
+        use_checkpoint: True # gradient checkpointing
         apply_lora: True
 
     first_stage_config:
