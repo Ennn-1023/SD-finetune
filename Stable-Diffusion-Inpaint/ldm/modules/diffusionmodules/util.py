@@ -158,11 +158,11 @@ class CheckpointFunction(torch.autograd.Function):
                 param_idx += 1
             else:
                 full_input_grads.append(None)
-        
+        input_grads_len = len(ctx.input_tensors)
         del ctx.input_tensors
         del ctx.input_params
         del output_tensors
-        return (None, None) + tuple(input_grads[:len(ctx.input_tensors)]) + tuple(full_input_grads)
+        return (None, None) + tuple(input_grads[:input_grads_len]) + tuple(full_input_grads)
 
 
 def timestep_embedding(timesteps, dim, max_period=10000, repeat_only=False):
