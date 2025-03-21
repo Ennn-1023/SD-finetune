@@ -341,7 +341,7 @@ class AttentionBlock(nn.Module):
         apply_lora = False
         if apply_lora:
             self.qkv = lora.Conv1d(channels, channels * 3, 1, r=lora_rank)
-            self.proj_out = zero_module(lora.Conv1d(channels, channels, 1))
+            self.proj_out = zero_module(lora.Conv1d(channels, channels, 1, r=lora_rank))
         else:
             self.qkv = conv_nd(1, channels, channels * 3, 1)
             self.proj_out = zero_module(conv_nd(1, channels, channels, 1))
@@ -492,6 +492,7 @@ class UNetModel(nn.Module):
         num_res_blocks,
         attention_resolutions,
         apply_lora=False,
+        lora_rank=8,
         dropout=0,
         channel_mult=(1, 2, 4, 8),
         conv_resample=True,
@@ -564,7 +565,7 @@ class UNetModel(nn.Module):
             self.input_blocks = nn.ModuleList(
                 [
                     TimestepEmbedSequential(
-                        lora.Conv2d(in_channels, model_channels, kernel_size=3, padding=1, r=16)
+                        lora.Conv2d(in_channels, model_channels, kernel_size=3, padding=1, r=lora_rank)
                     )
                 ]
             )
