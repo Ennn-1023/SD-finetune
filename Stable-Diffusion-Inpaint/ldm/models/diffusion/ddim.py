@@ -64,6 +64,8 @@ class DDIMSampler(object):
                quantize_x0=False,
                eta=0.,
                mask=None,
+               org_mask=None,
+               init_image=None,
                x0=None,
                temperature=1.,
                noise_dropout=0.,
@@ -100,10 +102,11 @@ class DDIMSampler(object):
         print(f'Data shape for DDIM sampling is {size}, eta {eta}')
 
         samples, intermediates = self.ddim_sampling(conditioning, size,
+                                                    init_image=init_image,
                                                     callback=callback,
                                                     img_callback=img_callback,
                                                     quantize_denoised=quantize_x0,
-                                                    mask=mask, x0=x0,
+                                                    mask=mask, x0=x0, org_mask=org_mask,
                                                     ddim_use_original_steps=False,
                                                     noise_dropout=noise_dropout,
                                                     temperature=temperature,
@@ -117,18 +120,18 @@ class DDIMSampler(object):
         return samples, intermediates
 
     @torch.no_grad()
-    def ddim_sampling(self, cond, shape,
+    def ddim_sampling(self, cond, shape, init_image=None,
                       x_T=None, ddim_use_original_steps=False,
                       callback=None, timesteps=None, quantize_denoised=False,
-                      mask=None, x0=None, img_callback=None, log_every_t=100,
+                      mask=None, org_mask=None, x0=None, img_callback=None, log_every_t=100,
                       temperature=1., noise_dropout=0., score_corrector=None, corrector_kwargs=None,
                       unconditional_guidance_scale=1., unconditional_conditioning=None,):
         device = self.model.betas.device
         b = shape[0]
-        if x_T is None:
-            img = torch.randn(shape, device=device)
-        else:
-            img = x_T
+        # if x_T is None:
+        #     img = torch.randn(shape, device=device)
+        # else:
+        #     img = x_T
 
         if timesteps is None:
             timesteps = self.ddpm_num_timesteps if ddim_use_original_steps else self.ddim_timesteps
@@ -141,14 +144,47 @@ class DDIMSampler(object):
         total_steps = timesteps if ddim_use_original_steps else timesteps.shape[0]
         print(f"Running DDIM Sampling with {total_steps} timesteps")
 
+        # add init image
+        if init_image is not None:
+            assert (
+                x0 is None and x_T is None
+            ), "Try to infer x0 and x_t from init_image, but they already provided"
+
+            encoder_posterior = self.model.encode_first_stage(init_image)
+            x0 = self.model.get_first_stage_encoding(encoder_posterior)
+            last_ts = torch.full((1,), time_range[0], device=device, dtype=torch.long)
+            x_T = torch.cat([self.model.q_sample(x0, last_ts) for _ in range(b)])
+            img = x_T
+        elif x_T is None:
+            img = torch.randn(shape, device=device)
+        else:
+            img = x_T
+
+
+
+
         iterator = tqdm(time_range, desc='DDIM Sampler', total=total_steps)
 
         for i, step in enumerate(iterator):
             index = total_steps - i - 1
             ts = torch.full((b,), step, device=device, dtype=torch.long)
+            # Latent-level blending
+            # if mask is not None and i < cutoff_point:
+            #     n_masks = mask.shape[0]
+            #     masks_interval = len(time_range) // n_masks + 1
+            #     curr_mask = mask[i // masks_interval].unsqueeze(0)
+            #     # print(f"Using index {i // masks_interval}")
+            #     img_orig = self.model.q_sample(x0, ts)
+            #     img = img_orig * (1 - curr_mask) + curr_mask * img
 
+            # origin
             if mask is not None:
                 assert x0 is not None
+                n_masks = mask.shape[0]
+                masks_interval = len(time_range) // n_masks + 1
+                curr_mask = mask[i // masks_interval].unsqueeze(0)
+                img_orig = self.model.q_sample(x0, ts)
+                img = img_orig * (1 - curr_mask) + curr_mask * img
                 img_orig = self.model.q_sample(x0, ts)  # TODO: deterministic forward pass?
                 img = img_orig * mask + (1. - mask) * img
 
@@ -159,6 +195,18 @@ class DDIMSampler(object):
                                       unconditional_guidance_scale=unconditional_guidance_scale,
                                       unconditional_conditioning=unconditional_conditioning)
             img, pred_x0 = outs
+            
+
+            # add pixel-level blending
+            if org_mask is not None:
+                foreground_pixels = self.model.decode_first_stage(pred_x0)
+                background_pixels = init_image
+                pixel_blended = foreground_pixels * org_mask + background_pixels * (1 - org_mask)
+                img_x0 = self.model.get_first_stage_encoding(
+                    self.model.encode_first_stage(pixel_blended)
+                )
+                img = self.model.q_sample(img_x0, ts)
+
             if callback: callback(i)
             if img_callback: img_callback(pred_x0, i)
 
