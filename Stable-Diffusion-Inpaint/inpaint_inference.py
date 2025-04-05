@@ -101,7 +101,7 @@ if __name__ == "__main__":
     print(f"Found {len(masks)} inputs.")
 
     config = OmegaConf.load(opt.yaml_profile)
-    config.model.params.params.ckpt = opt.ckpt
+    config.model.params.ckpt = opt.ckpt
     model = instantiate_from_config(config.model)
 
     model.load_state_dict(torch.load(opt.ckpt)["state_dict"],
