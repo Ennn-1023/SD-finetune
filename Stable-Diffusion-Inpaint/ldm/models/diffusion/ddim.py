@@ -177,7 +177,6 @@ class DDIMSampler(object):
             #     img_orig = self.model.q_sample(x0, ts)
             #     img = img_orig * (1 - curr_mask) + curr_mask * img
 
-            # origin
             if mask is not None:
                 assert x0 is not None
                 n_masks = mask.shape[0]

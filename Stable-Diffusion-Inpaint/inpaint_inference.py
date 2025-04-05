@@ -143,7 +143,8 @@ if __name__ == "__main__":
                                                     shape=shape,
                                                     verbose=False,
                                                     init_image=batch["masked_image"],
-                                                    mask=c_masked,) #? should be which one?
+                                                    mask=c_masked,
+                                                    org_mask=batch["mask"]) #? should be which one?
 
                 x_samples_ddim = model.decode_first_stage(samples_ddim)
 
