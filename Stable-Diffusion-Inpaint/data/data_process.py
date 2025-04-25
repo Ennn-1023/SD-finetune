@@ -2,9 +2,9 @@ import os
 import glob
 
 # 定義目錄
-raw_dir = "./train_data/origin/"
-fixed_dir = "./train_data/fixed/"
-mask_dir = "./train_data/mask/"
+raw_dir = "./dataset_0428-single/train_data/origin/"
+fixed_dir = "./dataset_0428-single/train_data/fixed/"
+mask_dir = "./dataset_0428-single/train_data/masks/"
 base_nameList = []
 for file_path in glob.glob(os.path.join(fixed_dir, "*.jpg")):
     base_name = os.path.basename(file_path)
