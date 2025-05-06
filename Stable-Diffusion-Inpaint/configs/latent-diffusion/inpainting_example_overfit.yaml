@@ -78,6 +78,7 @@ data:
         csv_file: ./data/dataset_0428-single/train.csv
         data_root: ./data/dataset_0428-single/train_data
         size: 512
+        inpainted: True
     validation:
       target: ldm.data.inpainting_dataset.InpaintingValidation
       params:

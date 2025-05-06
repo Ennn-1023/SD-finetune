@@ -23,6 +23,7 @@ class InpaintingBase(Dataset):
                  partition,
                  size,
                  interpolation="bicubic",
+                 inpainted=True,
                  ):
 
         self.csv_df = pd.read_csv(csv_file)
@@ -33,6 +34,8 @@ class InpaintingBase(Dataset):
         self.size = size
         self.transform = None
         self.transform_mask = None
+        
+        self.inpainted = inpainted
 
         self.interpolation = {"linear": PIL.Image.LINEAR,
                               "bilinear": PIL.Image.BILINEAR,
@@ -108,12 +111,15 @@ class InpaintingBase(Dataset):
         mask = torch.from_numpy(mask)
 
         # ---changed part---
-        masked_image = np.array(Image.open(fixed_path).convert("RGB"))
-        if masked_image.shape[0]!=resize_to or masked_image.shape[1]!=resize_to:
-            masked_image = cv2.resize(src=masked_image, dsize=(resize_to,resize_to), interpolation = cv2.INTER_AREA)
-        masked_image = masked_image.astype(np.float32)/255.0
-        masked_image = masked_image[None].transpose(0,3,1,2)
-        masked_image = torch.from_numpy(masked_image)
+        if self.inpainted:
+            masked_image = np.array(Image.open(fixed_path).convert("RGB"))
+            if masked_image.shape[0]!=resize_to or masked_image.shape[1]!=resize_to:
+                masked_image = cv2.resize(src=masked_image, dsize=(resize_to,resize_to), interpolation = cv2.INTER_AREA)
+            masked_image = masked_image.astype(np.float32)/255.0
+            masked_image = masked_image[None].transpose(0,3,1,2)
+            masked_image = torch.from_numpy(masked_image)
+        else:
+            masked_image = (1-mask)*image
         # ---
 
         batch = {"image": image, "mask": mask, "masked_image": masked_image}
@@ -141,8 +147,8 @@ class InpaintingBase(Dataset):
 
 
 class InpaintingTrain(InpaintingBase):
-    def __init__(self, csv_file, data_root, **kwargs):
-        super().__init__(csv_file=csv_file, partition="train",data_root=data_root,**kwargs)
+    def __init__(self, csv_file, data_root, inpainted=True, **kwargs):
+        super().__init__(csv_file=csv_file, partition="train",data_root=data_root, inpainted=inpainted,**kwargs)
         self.transform = transforms.Compose([
                 transforms.Resize((self.size,self.size)),
                 transforms.ToTensor(),
@@ -155,8 +161,8 @@ class InpaintingTrain(InpaintingBase):
 
 
 class InpaintingValidation(InpaintingBase):
-    def __init__(self, csv_file,data_root, **kwargs):
-        super().__init__(csv_file=csv_file, partition="validation", data_root=data_root, **kwargs)
+    def __init__(self, csv_file,data_root, inpainted=True, **kwargs):
+        super().__init__(csv_file=csv_file, partition="validation", data_root=data_root, inpainted=inpainted, **kwargs)
         self.transform = transforms.Compose([
                         transforms.Resize((self.size,self.size)),
                         transforms.ToTensor(),
