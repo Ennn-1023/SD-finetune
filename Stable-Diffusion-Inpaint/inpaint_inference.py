@@ -152,7 +152,7 @@ if __name__ == "__main__":
         with scope("Sampling"):
             for image, mask, fixed in tqdm(zip(images, masks, fixeds)):
                 #outpath = os.path.join(opt.outdir, "%s_%s_%s_%s.jpg" % (os.path.split(image)[1].split(".")[0], opt.prefix, ema_prefix, os.path.basename(opt.ckpt)))
-                outpath = os.path.join(opt.outdir, image)
+                outpath = os.path.join(opt.outdir, os.path.basename(image))
                 batch = make_batch(image, mask, fixed, device=device, resize_to=opt.resize, white_part=opt.white)
                 
                 c_masked = model.cond_stage_model.encode(batch["masked_image"])
