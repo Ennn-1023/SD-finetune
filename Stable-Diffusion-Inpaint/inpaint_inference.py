@@ -14,6 +14,15 @@ seed_everything(42)
 
 
 # RUN SCRIPT
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 if __name__ == "__main__":
     
@@ -86,17 +95,36 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--white",
-        type=bool,
+        type=str2bool,
         default=False,
         help="use white part or fixed",
+    )
+    parser.add_argument(
+        "--csv",
+        type=str,
+        default=None,
+        help="csv file of the dataset",
     )
 
     opt = parser.parse_args()
 
-    masks = sorted(glob.glob(os.path.join(opt.indir, "*_mask.*")))
+    if opt.csv is not None:
+        import pandas as pd
+        df = pd.read_csv(opt.csv)
+        df = df[df["partition"]=="validation"] # filter partition
 
-    images = [x.replace("_mask.jpg", "_raw.jpg") for x in masks]
-    fixeds = [x.replace("_mask.jpg", "_fixed.jpg") for x in masks]
+        df["image_path"] = df["image_path"].apply(lambda x: os.path.join(opt.indir, x))
+        df["fixed_path"] = df["fixed_path"].apply(lambda x: os.path.join(opt.indir, x))
+        df["mask_path"] = df["mask_path"].apply(lambda x: os.path.join(opt.indir, x))
+        # df.to_csv(os.path.join(opt.indir, "dataset.csv"), index=False)
+        masks = df["mask_path"].tolist()
+        images = df["image_path"].tolist()
+        fixeds = df["fixed_path"].tolist()
+    else:
+        masks = sorted(glob.glob(os.path.join(opt.indir, "*_mask.*")))
+
+        images = [x.replace("_mask.jpg", "_raw.jpg") for x in masks]
+        fixeds = [x.replace("_mask.jpg", "_fixed.jpg") for x in masks]
 
     print(f"Found {len(masks)} inputs.")
 
