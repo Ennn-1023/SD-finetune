@@ -111,7 +111,7 @@ if __name__ == "__main__":
     if opt.csv is not None:
         import pandas as pd
         df = pd.read_csv(opt.csv)
-        df = df[df["partition"]=="validation"] # filter partition
+        #df = df[df["partition"]=="validation"] # filter partition
 
         df["image_path"] = df["image_path"].apply(lambda x: os.path.join(opt.indir, x))
         df["fixed_path"] = df["fixed_path"].apply(lambda x: os.path.join(opt.indir, x))
