@@ -14,9 +14,10 @@ model:
     image_size: 128 # feature map size for 512x512 images
     channels: 3
     concat_mode: true # there will be no context_dim specified in unet,
-    monitor: val/loss_simple_ema
+    monitor: val/loss_simple
     # scale_factor: 0.18215
-    ckpt_path: "logs/2025-03-07_large_mask/checkpoints/large_mask-ep634.ckpt" #"models/ldm/inpainting_big/model_compvis.ckpt"
+    ckpt_path: "models/ldm/inpainting_big/model_compvis.ckpt"
+    use_ema: False
     
     unet_config:
       target: ldm.modules.diffusionmodules.openaimodel.UNetModel
@@ -38,6 +39,7 @@ model:
         num_heads: 8
         resblock_updown: true
         use_checkpoint: True # gradient checkpointing
+        apply_lora: True
 
     first_stage_config:
       target: ldm.models.autoencoder.VQModelInterface
@@ -67,21 +69,25 @@ model:
 data:
   target: main_inpainting.DataModuleFromConfig
   params:
-    batch_size: 4
-    num_workers: 5
+    batch_size: 6
+    num_workers: 2
     wrap: false
     train:
       target: ldm.data.inpainting_dataset.InpaintingTrain
       params:
-        csv_file: ./data/dataset_2025_03/train.csv
-        data_root: ./data/dataset_2025_03/train_data
+        csv_file: ./data/dataset_0428-single/train.csv
+        data_root: ./data/dataset_0428-single/train_data
         size: 512
+        inpainted: True
+        random_null: True
     validation:
       target: ldm.data.inpainting_dataset.InpaintingValidation
       params:
-        csv_file: ./data/dataset_2025_03/val.csv
-        data_root: ./data/dataset_2025_03/val_data
+        csv_file: ./data/dataset_0428-single/train.csv
+        data_root: ./data/dataset_0428-single/train_data
         size: 512
+        inpainted: True
+        random_null: False
 
 
 lightning:
@@ -91,7 +97,7 @@ lightning:
     image_logger:
       target: main_inpainting.ImageLogger
       params:
-        disabled: False
+        disabled: True
         batch_frequency: 750
         max_images: 4
         increase_log_steps: True

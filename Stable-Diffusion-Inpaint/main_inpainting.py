@@ -1,4 +1,5 @@
 import argparse, os, sys, datetime, glob, importlib, csv
+import loralib as lora # for lora use
 import numpy as np
 import time
 import torch
@@ -92,6 +93,14 @@ def get_parser(**parser_kwargs):
         "-p",
         "--project",
         help="name of new or path to existing project"
+    )
+    parser.add_argument(
+        "--lora",
+        type=str2bool,
+        const=True,
+        default=False,
+        nargs="?",
+        help="mark only lora as trainable",
     )
     parser.add_argument(
         "-d",
@@ -266,6 +275,7 @@ class SetupCallback(Callback):
             print("Summoning checkpoint keyboard interrupt.")
             ckpt_path = os.path.join(self.ckptdir, "last.ckpt")
             trainer.save_checkpoint(ckpt_path)
+            torch.save(lora.lora_state_dict(pl_module), os.path.join(self.ckptdir, "lora_last.ckpt"))
 
     def on_pretrain_routine_start(self, trainer, pl_module):
         if trainer.global_rank == 0:
@@ -429,7 +439,7 @@ class CUDACallback(Callback):
 
 if __name__ == "__main__":
 
-    now ="2025-03-07" # FIXED TO AVOID WASTING SPACE
+    now ="2025-05" # FIXED TO AVOID WASTING SPACE
 
     # add cwd for convenience and to make classes in this file available when
     # running as `python main.py`
@@ -517,6 +527,10 @@ if __name__ == "__main__":
         # model
         model = instantiate_from_config(config.model)
 
+        # mark lora as only trainable
+
+        if opt.lora:
+            lora.mark_only_lora_as_trainable(model)
         
         # trainer and callbacks
         trainer_kwargs = dict()
@@ -563,7 +577,7 @@ if __name__ == "__main__":
         if hasattr(model, "monitor"):
             print(f"Monitoring {model.monitor} as checkpoint metric.")
             default_modelckpt_cfg["params"]["monitor"] = model.monitor
-            default_modelckpt_cfg["params"]["save_top_k"] = 1
+            default_modelckpt_cfg["params"]["save_top_k"] = 3 # originally 1
 
         if "modelcheckpoint" in lightning_config:
             modelckpt_cfg = lightning_config.modelcheckpoint
@@ -690,6 +704,7 @@ if __name__ == "__main__":
                 print("Summoning checkpoint melk.")
                 ckpt_path = os.path.join(ckptdir, "last.ckpt")
                 trainer.save_checkpoint(ckpt_path)
+                torch.save(lora.lora_state_dict(model), os.path.join(ckptdir, "lora_last.ckpt"))
 
 
         def divein(*args, **kwargs):
@@ -704,6 +719,8 @@ if __name__ == "__main__":
         # run
         if opt.train:
             try:
+                import os
+                os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:128'
                 trainer.fit(model, data)
             except Exception:
                 print(traceback.print_exc())
