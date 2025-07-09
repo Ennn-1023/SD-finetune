@@ -8,7 +8,6 @@ import kornia
 
 from ldm.modules.x_transformer import Encoder, TransformerWrapper  # TODO: can we directly rely on lucidrains code and simply add this as a reuirement? --> test
 
-
 class AbstractEncoder(nn.Module):
     def __init__(self):
         super().__init__()
@@ -173,6 +172,7 @@ class FrozenCLIPTextEmbedder(nn.Module):
         self.max_length = max_length
         self.n_repeat = n_repeat
         self.normalize = normalize
+        self.freeze()
 
     def freeze(self):
         self.model = self.model.eval()
@@ -230,5 +230,5 @@ class FrozenClipImageEmbedder(nn.Module):
 
 if __name__ == "__main__":
     from ldm.util import count_params
-    model = FrozenCLIPEmbedder()
+    model = FrozenClipImageEmbedder()
     count_params(model, verbose=True)
