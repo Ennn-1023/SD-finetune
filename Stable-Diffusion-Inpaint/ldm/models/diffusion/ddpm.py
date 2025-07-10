@@ -925,8 +925,11 @@ class LatentDiffusion(DDPM):
             # FUNZIONA UGUALE MA QUESTO DOVREBBE ENTRARE QUA, NON CI DOVREBBE ESSERE L'OUTPUT DI CROSS-ATTENTION, CAPIRE PERCHE'
             if not isinstance(cond, list):
                 cond = [cond]
+
             key = 'c_concat' if self.model.conditioning_key == 'concat' else 'c_crossattn'
             cond = {key: cond}
+            
+        
         if hasattr(self, "split_input_params"):
             assert len(cond) == 1  # todo can only deal with one conditioning atm
             assert not return_ids  
@@ -1567,16 +1570,19 @@ class LatentInpaintDiffusion(LatentDiffusion):
             c_cat.append(cc)
         c_cat = torch.cat(c_cat, dim=1)
 
-        # # enocde cross attention conditioning
-        # if self.model.conditioning_key in ['crossattn', 'hybrid']:
-        #     c_crossattn = list()
-            
-        #     c_crossattn = [self.get_learned_conditioning(c_crossattn)]
-        # else:
-        #     c_crossattn = None
+        # enocde cross attention conditioning
+        if self.model.conditioning_key in ['crossattn', 'hybrid']:
+            c_crossattn = batch[self.masked_image_key]
+            c_crossattn = self.get_learned_conditioning(c_crossattn)
+            if self.model.conditioning_key == 'crossattn':
+                all_conds = [c_crossattn]
+            else:
+                all_conds = {'c_concat': c_cat, 'c_crossattn': c_crossattn}
+        else:
+            c_crossattn = None
+            all_conds = [c_cat]
 
-
-        all_conds = [c_cat]
+    
         if return_first_stage_outputs:
             return z, all_conds, x, xrec, xc
         return z, all_conds
