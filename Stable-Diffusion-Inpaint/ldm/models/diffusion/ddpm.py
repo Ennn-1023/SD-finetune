@@ -1472,7 +1472,6 @@ class LatentInpaintDiffusion(LatentDiffusion):
         self.c_concat_log_end = c_concat_log_end
         if exists(self.finetune_keys_to_retain): assert exists(ckpt_path), 'can only finetune from a given checkpoint'
         if exists(ckpt_path): self.init_from_ckpt(ckpt_path, ignore_keys)
-        self.instantiate_cond_stage(cond_stage_config)
 
 
 
