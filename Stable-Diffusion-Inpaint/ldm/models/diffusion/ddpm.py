@@ -913,7 +913,7 @@ class LatentDiffusion(DDPM):
     def apply_model(self, x_noisy, t, cond, return_ids=False):
         # print("\nAPPLY LATENT DIFFUSION MODEL", x_noisy.shape, t.shape, cond.shape)
         #exit()
-        print(f"******************Cond: {cond}")
+        print(f"******************Cond: {cond.shape}******************")
         exit()
         if isinstance(cond, dict):
             # hybrid case, cond is exptected to be a dict
