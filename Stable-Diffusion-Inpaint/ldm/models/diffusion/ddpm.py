@@ -913,8 +913,8 @@ class LatentDiffusion(DDPM):
     def apply_model(self, x_noisy, t, cond, return_ids=False):
         # print("\nAPPLY LATENT DIFFUSION MODEL", x_noisy.shape, t.shape, cond.shape)
         #exit()
-        print(f"******************Cond: {cond.shape}******************")
-        exit()
+        #print(f"******************Cond: {len(cond[0])}******************")
+        #exit()
         if isinstance(cond, dict):
             # hybrid case, cond is exptected to be a dict
             pass
@@ -1408,6 +1408,8 @@ class DiffusionWrapper(pl.LightningModule):
         assert self.conditioning_key in [None, 'concat', 'crossattn', 'hybrid', 'adm']
 
     def forward(self, x, t, c_concat: list = None, c_crossattn: list = None):
+        print(f"in DiffusionWrapper, c_concat: {c_concat}, c_crossattn: {c_crossattn}")
+        
         if self.conditioning_key is None:
             out = self.diffusion_model(x, t)
         elif self.conditioning_key == 'concat':
