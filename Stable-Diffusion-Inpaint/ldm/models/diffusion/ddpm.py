@@ -1578,7 +1578,7 @@ class LatentInpaintDiffusion(LatentDiffusion):
             if self.model.conditioning_key == 'crossattn':
                 all_conds = [c_crossattn]
             else:
-                all_conds = {'c_concat': c_cat, 'c_crossattn': c_crossattn}
+                all_conds = {'c_concat': [c_cat], 'c_crossattn': c_crossattn}
         else:
             c_crossattn = None
             all_conds = [c_cat]
