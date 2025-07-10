@@ -1444,8 +1444,6 @@ class LatentInpaintDiffusion(LatentDiffusion):
     To disable finetuning mode, set finetune_keys to None
      """
     def __init__(self,
-                 first_stage_config,
-                 cond_stage_config,
                 # DEFAULT FINETUNE KEYS --> use to add novel channels to the concatenation
                  finetune_training_keys=("model.diffusion_model.input_blocks.0.0.weight",
                                 "model_ema.diffusion_modelinput_blocks00weight"
