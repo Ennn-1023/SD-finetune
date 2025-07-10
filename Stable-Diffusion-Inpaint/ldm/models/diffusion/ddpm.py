@@ -890,6 +890,8 @@ class LatentDiffusion(DDPM):
         return loss
 
     def forward(self, x, c, *args, **kwargs):
+        print("FORWARD LATENT DIFFUSION MODEL", x.shape, c.shape)
+        exit()
         t = torch.randint(0, self.num_timesteps, (x.shape[0],), device=self.device).long()
         if self.model.conditioning_key is not None:
             assert c is not None
