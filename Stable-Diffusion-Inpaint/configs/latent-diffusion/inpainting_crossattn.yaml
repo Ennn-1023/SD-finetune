@@ -10,7 +10,7 @@ model:
     timesteps: 1000
     first_stage_key: image
     cond_stage_key: masked_image # 4 channels
-    cond_stage_trainable: true # ?
+    cond_stage_trainable: false # ?
     conditioning_key: hybrid # for cross attention
     image_size: 128 # feature map size for 512x512 images
     channels: 3
@@ -66,7 +66,7 @@ model:
         lossconfig:
           target: torch.nn.Identity # NO TRAIN FOR AUTOENCODER
     cond_stage_config: 
-      target: ldm.modules.encoders.modules.FrozenCLIPEmbedder
+      target: ldm.modules.encoders.modules.FrozenClipImageEmbedder
 
 data:
   target: main_inpainting.DataModuleFromConfig

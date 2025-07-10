@@ -913,6 +913,8 @@ class LatentDiffusion(DDPM):
     def apply_model(self, x_noisy, t, cond, return_ids=False):
         # print("\nAPPLY LATENT DIFFUSION MODEL", x_noisy.shape, t.shape, cond.shape)
         #exit()
+        print(f"******************Cond: {cond}")
+        exit()
         if isinstance(cond, dict):
             # hybrid case, cond is exptected to be a dict
             pass
@@ -1442,6 +1444,8 @@ class LatentInpaintDiffusion(LatentDiffusion):
     To disable finetuning mode, set finetune_keys to None
      """
     def __init__(self,
+                 first_stage_config,
+                 cond_stage_config,
                 # DEFAULT FINETUNE KEYS --> use to add novel channels to the concatenation
                  finetune_training_keys=("model.diffusion_model.input_blocks.0.0.weight",
                                 "model_ema.diffusion_modelinput_blocks00weight"
@@ -1470,7 +1474,10 @@ class LatentInpaintDiffusion(LatentDiffusion):
         self.c_concat_log_end = c_concat_log_end
         if exists(self.finetune_keys_to_retain): assert exists(ckpt_path), 'can only finetune from a given checkpoint'
         if exists(ckpt_path): self.init_from_ckpt(ckpt_path, ignore_keys)
-        
+        self.instantiate_cond_stage(cond_stage_config)
+
+
+
     def init_from_ckpt(self, path, ignore_keys=list(), only_model=False):
         sd = torch.load(path, map_location="cpu")
         if "state_dict" in list(sd.keys()):
