@@ -890,16 +890,17 @@ class LatentDiffusion(DDPM):
         return loss
 
     def forward(self, x, c, *args, **kwargs):
-        print("FORWARD LATENT DIFFUSION MODEL", x.shape, c.shape)
-        exit()
+        #print("FORWARD LATENT DIFFUSION MODEL", x.shape, c[0].shape)
+        #exit()
         t = torch.randint(0, self.num_timesteps, (x.shape[0],), device=self.device).long()
-        if self.model.conditioning_key is not None:
-            assert c is not None
-            if self.cond_stage_trainable:
-                c = self.get_learned_conditioning(c)
-            if self.shorten_cond_schedule:  # TODO: drop this option
-                tc = self.cond_ids[t].to(self.device)
-                c = self.q_sample(x_start=c, t=tc, noise=torch.randn_like(c.float()))
+        # get_inpnut already encode the conditioning
+        # if self.model.conditioning_key is not None:
+        #     assert c is not None
+        #     if self.cond_stage_trainable:
+        #         c = self.get_learned_conditioning(c)
+        #     if self.shorten_cond_schedule:  # TODO: drop this option
+        #         tc = self.cond_ids[t].to(self.device)
+        #         c = self.q_sample(x_start=c, t=tc, noise=torch.randn_like(c.float()))
         return self.p_losses(x, c, t, *args, **kwargs)
 
     def _rescale_annotations(self, bboxes, crop_coordinates):  # TODO: move to dataset
@@ -1544,7 +1545,7 @@ class LatentInpaintDiffusion(LatentDiffusion):
     @torch.no_grad()
     def get_input(self, batch, k, cond_key=None, bs=None, return_first_stage_outputs=False):
         # note: restricted to non-trainable encoders currently
-        assert not self.cond_stage_trainable, 'trainable cond stages not yet supported for inpainting'
+        # assert not self.cond_stage_trainable, 'trainable cond stages not yet supported for inpainting'
         z, c, x, xrec, xc = super().get_input(batch, self.first_stage_key, return_first_stage_outputs=True,
                                               force_c_encode=True, return_original_cond=True, bs=bs)
 
@@ -1565,9 +1566,17 @@ class LatentInpaintDiffusion(LatentDiffusion):
                 cc = self.get_first_stage_encoding(self.encode_first_stage(cc))
             c_cat.append(cc)
         c_cat = torch.cat(c_cat, dim=1)
-        
-        # NO CROSS ATTENTION
-        all_conds = [c_cat]        
+
+        # # enocde cross attention conditioning
+        # if self.model.conditioning_key in ['crossattn', 'hybrid']:
+        #     c_crossattn = list()
+            
+        #     c_crossattn = [self.get_learned_conditioning(c_crossattn)]
+        # else:
+        #     c_crossattn = None
+
+
+        all_conds = [c_cat]
         if return_first_stage_outputs:
             return z, all_conds, x, xrec, xc
         return z, all_conds
