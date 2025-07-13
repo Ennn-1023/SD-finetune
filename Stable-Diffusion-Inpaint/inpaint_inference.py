@@ -160,7 +160,9 @@ if __name__ == "__main__":
                 cc_mask = torch.nn.functional.interpolate(batch["mask"],
                                                         size=c_masked.shape[-2:])
 
-                c = torch.cat((c_masked,cc_mask), dim=1)
+                c_concat = torch.cat((c_masked,cc_mask), dim=1)
+                c_crossattn = model.get_learned_conditioning(batch["masked_image"])
+                c = {"c_concat": [c_concat], "c_crossattn": [c_crossattn]}
 
                 shape = (3,) + c_masked.shape[2:] # same
 
@@ -169,6 +171,7 @@ if __name__ == "__main__":
                                                     conditioning=c,
                                                     batch_size=c.shape[0],
                                                     shape=shape,
+                                                    # maask=cc_mask,
                                                     verbose=False)
 
                 x_samples_ddim = model.decode_first_stage(samples_ddim)
