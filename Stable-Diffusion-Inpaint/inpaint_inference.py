@@ -162,7 +162,15 @@ if __name__ == "__main__":
 
                 c_concat = torch.cat((c_masked,cc_mask), dim=1)
                 c_crossattn = model.get_learned_conditioning(batch["masked_image"])
-                c = {"c_concat": [c_concat], "c_crossattn": [c_crossattn]}
+                if config.model.params.conditioning_key == "concat":
+                    c = c_concat
+                elif config.model.params.conditioning_key == "crossattn":
+                    c = c_crossattn
+                elif config.model.params.conditioning_key == "hybird":
+                    c = {"c_concat": [c_concat], "c_crossattn": [c_crossattn]}
+                else:
+                    raise ValueError("Unknown conditioning key: %s" % config.model.params.conditioning_key)
+
 
                 shape = (3,) + c_masked.shape[2:] # same
 
