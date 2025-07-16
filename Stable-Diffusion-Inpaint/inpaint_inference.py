@@ -178,7 +178,7 @@ if __name__ == "__main__":
                 
                 samples_ddim, _ = sampler.sample(S=opt.steps,
                                                     conditioning=c,
-                                                    batch_size=c.shape[0],
+                                                    batch_size=1,
                                                     shape=shape,
                                                     # maask=cc_mask,
                                                     verbose=False)
