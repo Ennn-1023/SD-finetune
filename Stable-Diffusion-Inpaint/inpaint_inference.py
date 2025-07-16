@@ -155,7 +155,8 @@ if __name__ == "__main__":
                 outpath = os.path.join(opt.outdir, os.path.basename(image))
                 batch = make_batch(image, mask, fixed, device=device, resize_to=opt.resize, white_part=opt.white)
                 
-                c_masked = model.cond_stage_model.encode(batch["masked_image"])
+                # c_masked = model.cond_stage_model.encode(batch["masked_image"])
+                c_masked = model.first_stage_model.encode(batch["masked_image"])
                                 
                 cc_mask = torch.nn.functional.interpolate(batch["mask"],
                                                         size=c_masked.shape[-2:])
