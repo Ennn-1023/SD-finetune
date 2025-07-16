@@ -167,7 +167,7 @@ if __name__ == "__main__":
                     c = c_concat
                 elif config.model.params.conditioning_key == "crossattn":
                     c = c_crossattn
-                elif config.model.params.conditioning_key == "hybird":
+                elif config.model.params.conditioning_key == "hybrid":
                     c = {"c_concat": [c_concat], "c_crossattn": [c_crossattn]}
                 else:
                     raise ValueError("Unknown conditioning key: %s" % config.model.params.conditioning_key)
