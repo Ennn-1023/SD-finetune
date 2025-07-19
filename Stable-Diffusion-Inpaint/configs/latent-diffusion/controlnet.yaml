@@ -14,7 +14,8 @@ model:
     cond_stage_trainable: false
     conditioning_key: concat # concat/crossattn/hybrid
     monitor: val/loss_simple_ema
-    ckpt_path: "models/ldm/inpainting_big/model_compvis.ckpt"
+    ckpt_path: #"models/ldm/inpainting_big/model_compvis.ckpt"
+    ckpt_path: "models/ldm/ControlNet/v15-pruned.ckpt"
     scale_factor: 0.18215
     use_ema: False
     only_mid_control: False
@@ -26,7 +27,7 @@ model:
         image_size: 32 # unused
         in_channels: 3
         hint_channels: 4
-        model_channels: 320
+        model_channels: 256
         attention_resolutions: [ 4, 2, 1 ]
         num_res_blocks: 2
         channel_mult: [ 1, 2, 4, 4 ]
@@ -44,7 +45,7 @@ model:
         image_size: 32 # unused
         in_channels: 3
         out_channels: 3
-        model_channels: 320
+        model_channels: 256
         attention_resolutions: [ 4, 2, 1 ]
         num_res_blocks: 2
         channel_mult: [ 1, 2, 4, 4 ]
