@@ -1,4 +1,5 @@
 model:
+  base_learning_rate: 1.0e-06
   target: ldm.models.ControlNet.cldm.ControlLDMInPaintConcat
   params:
     linear_start: 0.00085
