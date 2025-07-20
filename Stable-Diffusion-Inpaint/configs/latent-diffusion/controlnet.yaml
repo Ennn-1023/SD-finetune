@@ -57,7 +57,7 @@ model:
         legacy: False
 
     first_stage_config:
-      target: ldm.models.autoencoder.VQModelInterface
+      target: ldm.models.autoencoder.AutoencoderKL
       params:
         embed_dim: 3
         monitor: val/rec_loss
