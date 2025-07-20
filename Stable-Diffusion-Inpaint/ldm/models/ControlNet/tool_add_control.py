@@ -2,7 +2,7 @@ import sys, os
 import torch
 sys.path.append(os.getcwd()) # run from root directory only! python ldm/models/ControlNet/tool_add_control.py
 from ldm.models.ControlNet.model import create_model
-
+sys.path.clear()
 
 assert len(sys.argv) == 4, 'Args are wrong.'
 
