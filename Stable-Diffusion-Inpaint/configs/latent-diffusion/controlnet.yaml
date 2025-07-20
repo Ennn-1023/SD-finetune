@@ -16,7 +16,8 @@ model:
     conditioning_key: concat # concat/crossattn/hybrid
     monitor: val/loss_simple_ema
     #ckpt_path: "models/ldm/inpainting_big/model_compvis.ckpt"
-    ckpt_path: "models/ldm/ControlNet/v15-pruned.ckpt"
+    #ckpt_path: "models/ldm/ControlNet/v15-pruned.ckpt"
+    ckpt_path: "models/ldm/ControlNet/v15-control.ckpt"
     scale_factor: 0.18215
     use_ema: False
     only_mid_control: False
