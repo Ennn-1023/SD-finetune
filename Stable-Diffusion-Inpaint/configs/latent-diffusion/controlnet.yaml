@@ -26,7 +26,7 @@ model:
       params:
         image_size: 32 # unused
         in_channels: 4
-        hint_channels: 4
+        hint_channels: 5
         model_channels: 320
         attention_resolutions: [ 4, 2, 1 ]
         num_res_blocks: 2
@@ -43,8 +43,8 @@ model:
       target: ldm.models.ControlNet.cldm.ControlledUnetModel
       params:
         image_size: 32 # unused
-        in_channels: 3
-        out_channels: 3
+        in_channels: 4
+        out_channels: 4
         model_channels: 320
         attention_resolutions: [ 4, 2, 1 ]
         num_res_blocks: 2
@@ -63,7 +63,7 @@ model:
         monitor: val/rec_loss
         ddconfig:
           double_z: true
-          z_channels: 3
+          z_channels: 4
           resolution: 256
           in_channels: 3
           out_ch: 3
