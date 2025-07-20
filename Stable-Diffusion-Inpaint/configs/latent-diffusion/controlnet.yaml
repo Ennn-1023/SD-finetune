@@ -36,7 +36,7 @@ model:
         num_heads: 8
         use_spatial_transformer: True
         transformer_depth: 1
-        # context_dim: 768
+        context_dim: 768
         use_checkpoint: True
         legacy: False
         
@@ -54,7 +54,7 @@ model:
         num_heads: 8
         use_spatial_transformer: True #True
         transformer_depth: 1
-        context_dim: #768
+        context_dim: 768
         use_checkpoint: True
         legacy: False
 
