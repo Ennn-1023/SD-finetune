@@ -344,7 +344,8 @@ class AttentionBlock(nn.Module):
             self.proj_out = zero_module(lora.Conv1d(channels, channels, 1, r=lora_rank))
         else:
             self.qkv = conv_nd(1, channels, channels * 3, 1)
-            self.proj_out = zero_module(conv_nd(1, channels, channels, 1))
+            # self.proj_out = zero_module(conv_nd(1, channels, channels, 1))
+            self.proj_out = zero_module(conv_nd(2, channels, channels, 1))
         if use_new_attention_order:
             # split qkv before split heads
             self.attention = QKVAttention(self.num_heads)
