@@ -1,14 +1,14 @@
 import sys, os
 import torch
-sys.path.append(os.getcwd()) # run from root directory only! python ldm/models/ControlNet/tool_add_control.py
+#sys.path.append(os.getcwd()) # run from root directory only! python ldm/models/ControlNet/tool_add_control.py
 from ldm.models.ControlNet.model import create_model
 
-root_dir = "/data01/lorenzo.stacchio/TU GRAZ/Stable_Diffusion_Inpaiting/stable-diffusion_custom_inpaint/"
 
-input_path = root_dir + "models/ldm/inpainting_big/model_compvis.ckpt"
-output_path = root_dir + "models/ldm/ControlNet/model_cn.ckpt"
+assert len(sys.argv) == 4, 'Args are wrong.'
 
-config_path =  root_dir + 'configs/latent-diffusion/inpainting_runaway_interiornet_FULL_ControlNet.yaml'
+input_path = sys.argv[1]
+output_path = sys.argv[2]
+config_path = sys.argv[3]
 
 
 assert os.path.exists(input_path), 'Input model does not exist.'
