@@ -2,6 +2,7 @@ import einops
 import torch
 import torch as th
 import torch.nn as nn
+import torch.nn.functional as F
 
 from ldm.modules.diffusionmodules.util import (
     conv_nd,
@@ -147,26 +148,12 @@ class ControlNet(nn.Module):
         )
         self.zero_convs = nn.ModuleList([self.make_zero_conv(model_channels)])
 
-        self.input_hint_block = TimestepEmbedSequential(
-            conv_nd(dims, hint_channels, 16, 3, padding=1),
-            nn.SiLU(),
-            conv_nd(dims, 16, 16, 3, padding=1),
-            nn.SiLU(),
-            conv_nd(dims, 16, 32, 3, padding=1, stride=2),
-            nn.SiLU(),
-            conv_nd(dims, 32, 32, 3, padding=1),
-            nn.SiLU(),
-            conv_nd(dims, 32, 96, 3, padding=1, stride=2),
-            nn.SiLU(),
-            conv_nd(dims, 96, 96, 3, padding=1),
-            nn.SiLU(),
-            conv_nd(dims, 96, 256, 3, padding=1, stride=2),
-            nn.SiLU(),
-            zero_module(conv_nd(dims, 256, model_channels, 3, padding=1))
-        )
-        
         # self.input_hint_block = TimestepEmbedSequential(
-        #     conv_nd(dims, hint_channels, 32, 3, padding=1),
+        #     conv_nd(dims, hint_channels, 16, 3, padding=1),
+        #     nn.SiLU(),
+        #     conv_nd(dims, 16, 16, 3, padding=1),
+        #     nn.SiLU(),
+        #     conv_nd(dims, 16, 32, 3, padding=1, stride=2),
         #     nn.SiLU(),
         #     conv_nd(dims, 32, 32, 3, padding=1),
         #     nn.SiLU(),
@@ -178,6 +165,20 @@ class ControlNet(nn.Module):
         #     nn.SiLU(),
         #     zero_module(conv_nd(dims, 256, model_channels, 3, padding=1))
         # )
+        
+        self.input_hint_block = TimestepEmbedSequential(
+            conv_nd(dims, hint_channels, 32, 3, padding=1),
+            nn.SiLU(),
+            conv_nd(dims, 32, 32, 3, padding=1),
+            nn.SiLU(),
+            conv_nd(dims, 32, 96, 3, padding=1, stride=2),
+            nn.SiLU(),
+            conv_nd(dims, 96, 96, 3, padding=1),
+            nn.SiLU(),
+            conv_nd(dims, 96, 256, 3, padding=1, stride=2),
+            nn.SiLU(),
+            zero_module(conv_nd(dims, 256, model_channels, 3, padding=1))
+        )
         
         # self.input_hint_block = TimestepEmbedSequential(
         #     conv_nd(dims, hint_channels, 16, 3, padding=1),
@@ -326,11 +327,15 @@ class ControlNet(nn.Module):
         outs = []
 
         h = x.type(self.dtype)
-        print(f"h.shape: {h.shape}")
-        print(f"guided_hint.shape: {guided_hint.shape}")
+        # print(f"h.shape: {h.shape}")
+        # print(f"guided_hint.shape: {guided_hint.shape}")
         for module, zero_conv in zip(self.input_blocks, self.zero_convs):
             if guided_hint is not None:
                 h = module(h, emb, context)
+                # to fix the shape mismatch
+                if h.shape[2:] != guided_hint.shape[2:]:
+                    
+                    guided_hint = F.interpolate(guided_hint, size=h.shape[2:], mode='bilinear', align_corners=False)
                 h += guided_hint
                 guided_hint = None
             else:
