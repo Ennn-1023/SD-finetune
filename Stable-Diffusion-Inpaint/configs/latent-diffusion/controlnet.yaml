@@ -34,7 +34,7 @@ model:
         num_res_blocks: 2
         channel_mult: [ 1, 2, 4, 4 ]
         num_heads: 8
-        use_spatial_transformer: False
+        use_spatial_transformer: True
         transformer_depth: 1
         # context_dim: 768
         use_checkpoint: True
@@ -52,7 +52,7 @@ model:
         num_res_blocks: 2
         channel_mult: [ 1, 2, 4, 4 ]
         num_heads: 8
-        use_spatial_transformer: False #True
+        use_spatial_transformer: True #True
         transformer_depth: 1
         context_dim: #768
         use_checkpoint: True
