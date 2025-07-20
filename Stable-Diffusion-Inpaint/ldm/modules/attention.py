@@ -9,7 +9,16 @@ from typing import Optional, Any
 from ldm.modules.diffusionmodules.util import checkpoint
 
 
+try:
+    import xformers
+    import xformers.ops
+    XFORMERS_IS_AVAILBLE = True
+except:
+    XFORMERS_IS_AVAILBLE = False
 
+# CrossAttn precision handling
+import os
+_ATTN_PRECISION = os.environ.get("ATTN_PRECISION", "fp32")
 
 def exists(val):
     return val is not None
@@ -97,7 +106,7 @@ class LinearAttention(nn.Module):
         out = rearrange(out, 'b heads c (h w) -> b (heads c) h w', heads=self.heads, h=h, w=w)
         return self.to_out(out)
     
-    
+
 class SpatialSelfAttention(nn.Module):
     def __init__(self, in_channels):
         super().__init__()
