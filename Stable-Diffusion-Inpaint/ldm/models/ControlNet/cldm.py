@@ -327,7 +327,7 @@ class ControlNet(nn.Module):
         outs = []
 
         h = x.type(self.dtype)
-        h = torch.cat([h, hint], dim=1) # concatenate cond to build 7 channels input
+        # h = torch.cat([h, hint], dim=1) # concatenate cond to build 7 channels input
 
         # print(f"guided_hint.shape: {guided_hint.shape}")
         for module, zero_conv in zip(self.input_blocks, self.zero_convs):
@@ -567,7 +567,7 @@ class ControlLDMInPaintConcat(LatentDiffusion):
         else: # with concat conditioning as hint, not control key
             control = self.control_model(x=x_noisy, hint=cond['c_concat'], timesteps=t, context=cond_txt)
             control = [c * scale for c, scale in zip(control, self.control_scales)]
-            eps = diffusion_model(x=x_noisy, timesteps=t, context=cond_txt, control=control, only_mid_control=self.only_mid_control)
+            eps = diffusion_model(x=torch.cat([x_noisy, cond['c_concat']], dim=1), timesteps=t, context=cond_txt, control=control, only_mid_control=self.only_mid_control)
 
         return eps
 
