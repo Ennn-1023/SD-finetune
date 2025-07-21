@@ -338,7 +338,6 @@ class ControlNet(nn.Module):
                     
                     guided_hint = F.interpolate(guided_hint, size=h.shape[2:], mode='bilinear', align_corners=False)
                 h += guided_hint
-                print(f"h.shape: {h.shape}")
                 guided_hint = None
             else:
                 h = module(h, emb, context)
