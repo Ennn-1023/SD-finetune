@@ -11,13 +11,12 @@ model:
     cond_stage_key: masked_image
     control_key: masked_image
     image_size: 128
-    channels: 4
+    channels: 3
     cond_stage_trainable: false
     conditioning_key: concat # concat/crossattn/hybrid
-    monitor: val/loss_simple_ema
-    #ckpt_path: "models/ldm/inpainting_big/model_compvis.ckpt"
-    #ckpt_path: "models/ldm/ControlNet/v15-pruned.ckpt"
-    ckpt_path: "models/ldm/ControlNet/v15-control.ckpt"
+    monitor: val/loss
+    # ckpt_path: "models/ldm/inpainting_big/model_compvis.ckpt"
+    # ckpt_path: "models/ldm/ControlNet/v15-control.ckpt"
     scale_factor: 0.18215
     use_ema: False
     only_mid_control: False
@@ -27,12 +26,12 @@ model:
       target: ldm.models.ControlNet.cldm.ControlNet
       params:
         image_size: 32 # unused
-        in_channels: 4
-        hint_channels: 5
-        model_channels: 320
-        attention_resolutions: [ 4, 2, 1 ]
+        in_channels: 7
+        hint_channels: 4
+        model_channels: 256
+        attention_resolutions: [ 8, 4, 2 ]
         num_res_blocks: 2
-        channel_mult: [ 1, 2, 4, 4 ]
+        channel_mult: [ 1, 2, 3, 4 ]
         num_heads: 8
         use_spatial_transformer: False
         transformer_depth: 1
@@ -46,12 +45,12 @@ model:
       target: ldm.models.ControlNet.cldm.ControlledUnetModel
       params:
         image_size: 32 # unused
-        in_channels: 4
-        out_channels: 4
-        model_channels: 320
-        attention_resolutions: [ 4, 2, 1 ]
+        in_channels: 7
+        out_channels: 3
+        model_channels: 256
+        attention_resolutions: [ 8, 4, 2 ]
         num_res_blocks: 2
-        channel_mult: [ 1, 2, 4, 4 ]
+        channel_mult: [ 1, 2, 3, 4 ]
         num_heads: 8
         use_spatial_transformer: False #True
         transformer_depth: 1
@@ -60,13 +59,15 @@ model:
         legacy: False
 
     first_stage_config:
-      target: ldm.models.autoencoder.AutoencoderKL
+      target: ldm.models.autoencoder.VQModelInterface
       params:
-        embed_dim: 4
+        embed_dim: 3
+        n_embed: 8192
         monitor: val/rec_loss
         ddconfig:
-          double_z: true
-          z_channels: 4
+          attn_type: none # concat mode
+          double_z: false
+          z_channels: 3
           resolution: 256
           in_channels: 3
           out_ch: 3
@@ -75,13 +76,11 @@ model:
           - 1
           - 2
           - 4
-          - 4
           num_res_blocks: 2
           attn_resolutions: []
           dropout: 0.0
         lossconfig:
-          target: torch.nn.Identity
-
+          target: torch.nn.Identity # NO TRAIN FOR AUTOENCODER
     cond_stage_config: __is_first_stage__
       # target: ldm.modules.encoders.modules.FrozenCLIPImageEmbedder
 
