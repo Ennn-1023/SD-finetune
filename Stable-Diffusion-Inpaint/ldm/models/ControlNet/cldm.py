@@ -328,8 +328,7 @@ class ControlNet(nn.Module):
 
         h = x.type(self.dtype)
         h = torch.cat([h, hint], dim=1) # concatenate cond to build 7 channels input
-        print(f"h.shape: {h.shape}")
-        exit(0)
+
         # print(f"guided_hint.shape: {guided_hint.shape}")
         for module, zero_conv in zip(self.input_blocks, self.zero_convs):
             if guided_hint is not None:
