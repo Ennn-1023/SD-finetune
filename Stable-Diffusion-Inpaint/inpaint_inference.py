@@ -105,13 +105,19 @@ if __name__ == "__main__":
         default=None,
         help="csv file of the dataset",
     )
+    parser.add_argument(
+        "--control",
+        type=str2bool,
+        default=False,
+        help="use controlnet",
+    )
 
     opt = parser.parse_args()
 
     if opt.csv is not None:
         import pandas as pd
         df = pd.read_csv(opt.csv)
-        #df = df[df["partition"]=="validation"] # filter partition
+        df = df[df["partition"]=="validation"] # filter partition
 
         df["image_path"] = df["image_path"].apply(lambda x: os.path.join(opt.indir, x))
         df["fixed_path"] = df["fixed_path"].apply(lambda x: os.path.join(opt.indir, x))
@@ -156,18 +162,21 @@ if __name__ == "__main__":
                 batch = make_batch(image, mask, fixed, device=device, resize_to=opt.resize, white_part=opt.white)
                 
                 # c_masked = model.cond_stage_model.encode(batch["masked_image"])
+
                 c_masked = model.first_stage_model.encode(batch["masked_image"])
                                 
                 cc_mask = torch.nn.functional.interpolate(batch["mask"],
                                                         size=c_masked.shape[-2:])
 
                 c_concat = torch.cat((c_masked,cc_mask), dim=1)
-                c_crossattn = model.get_learned_conditioning(batch["masked_image"])
+                
                 if config.model.params.conditioning_key == "concat":
                     c = c_concat
                 elif config.model.params.conditioning_key == "crossattn":
+                    c_crossattn = model.get_learned_conditioning(batch["masked_image"])
                     c = c_crossattn
                 elif config.model.params.conditioning_key == "hybrid":
+                    c_crossattn = model.get_learned_conditioning(batch["masked_image"])
                     c = {"c_concat": [c_concat], "c_crossattn": [c_crossattn]}
                 else:
                     raise ValueError("Unknown conditioning key: %s" % config.model.params.conditioning_key)
