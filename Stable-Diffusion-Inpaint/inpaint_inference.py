@@ -182,7 +182,7 @@ if __name__ == "__main__":
                     raise ValueError("Unknown conditioning key: %s" % config.model.params.conditioning_key)
 
                 if opt.control:
-                    c = {"c_concat": [c_concat]}
+                    c = {"c_concat": c_concat}
 
                 shape = (3,) + c_masked.shape[2:] # same
 
