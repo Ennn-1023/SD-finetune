@@ -223,4 +223,4 @@ if __name__ == "__main__":
                 
                 # image_to_print = plot_row_original_mask_output([{"masked_image":masked_image, "image":image, "predicted_image":predicted_image}], image_size = 512)
                 # Image.fromarray(image_to_print.astype(np.uint8)).save(outpath)
-                Image.fromarray(inpainted.astype(np.uint8)).save(outpath)
+                Image.fromarray(predicted_image.astype(np.uint8)).save(outpath)
