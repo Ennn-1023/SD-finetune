@@ -215,7 +215,7 @@ if __name__ == "__main__":
                 
                 inpainted = inpainted.cpu().numpy().transpose(0,2,3,1)[0]*255
                 
-                #predicted_image = predicted_image.cpu().numpy().transpose(0,2,3,1)[0]*255
+                predicted_image = predicted_image.cpu().numpy().transpose(0,2,3,1)[0]*255
                 
                 # mask = mask.cpu().numpy().transpose(0,2,3,1)[0]*255
                 # image = image.cpu().numpy().transpose(0,2,3,1)[0]*255
