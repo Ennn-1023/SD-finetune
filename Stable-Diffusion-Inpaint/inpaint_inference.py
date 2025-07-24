@@ -164,7 +164,7 @@ if __name__ == "__main__":
                 # c_masked = model.cond_stage_model.encode(batch["masked_image"])
                 latent_img = model.encode_first_stage(batch["image"])
                 decoded_img = model.decode_first_stage(latent_img)
-                predicted_image = (decoded_img.cpu().numpy().transpose(0,2,3,1)[0]+1)/2.0*255
+                predicted_image = (decoded_img.cpu().numpy().transpose(0,2,3,1)[0]+1.0)/2.0*255
                 Image.fromarray(predicted_image.astype(np.uint8)).save(outpath)
                 exit(0)
 
@@ -228,4 +228,4 @@ if __name__ == "__main__":
                 
                 # image_to_print = plot_row_original_mask_output([{"masked_image":masked_image, "image":image, "predicted_image":predicted_image}], image_size = 512)
                 # Image.fromarray(image_to_print.astype(np.uint8)).save(outpath)
-                Image.fromarray(predicted_image.astype(np.uint8)).save(outpath)
+                Image.fromarray(inpainted.astype(np.uint8)).save(outpath)
