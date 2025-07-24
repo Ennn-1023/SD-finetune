@@ -168,66 +168,65 @@ if __name__ == "__main__":
                 Image.fromarray(predicted_image.astype(np.uint8)).save(outpath)
                 
                 print("Save predicted image to %s" % outpath)
-                exit(0)  # IGNORE --- for debugging
 
 
 
-                c_masked = model.first_stage_model.encode(batch["masked_image"])
+                # c_masked = model.first_stage_model.encode(batch["masked_image"])
                                 
-                cc_mask = torch.nn.functional.interpolate(batch["mask"],
-                                                        size=c_masked.shape[-2:])
+                # cc_mask = torch.nn.functional.interpolate(batch["mask"],
+                #                                         size=c_masked.shape[-2:])
 
-                c_concat = torch.cat((c_masked,cc_mask), dim=1)
+                # c_concat = torch.cat((c_masked,cc_mask), dim=1)
                 
-                if config.model.params.conditioning_key == "concat":
-                    c = c_concat
-                elif config.model.params.conditioning_key == "crossattn":
-                    c_crossattn = model.get_learned_conditioning(batch["masked_image"])
-                    c = c_crossattn
-                elif config.model.params.conditioning_key == "hybrid":
-                    c_crossattn = model.get_learned_conditioning(batch["masked_image"])
-                    c = {"c_concat": [c_concat], "c_crossattn": [c_crossattn]}
-                else:
-                    raise ValueError("Unknown conditioning key: %s" % config.model.params.conditioning_key)
+                # if config.model.params.conditioning_key == "concat":
+                #     c = c_concat
+                # elif config.model.params.conditioning_key == "crossattn":
+                #     c_crossattn = model.get_learned_conditioning(batch["masked_image"])
+                #     c = c_crossattn
+                # elif config.model.params.conditioning_key == "hybrid":
+                #     c_crossattn = model.get_learned_conditioning(batch["masked_image"])
+                #     c = {"c_concat": [c_concat], "c_crossattn": [c_crossattn]}
+                # else:
+                #     raise ValueError("Unknown conditioning key: %s" % config.model.params.conditioning_key)
 
-                if opt.control:
-                    c = {"c_concat": c_concat}
+                # if opt.control:
+                #     c = {"c_concat": c_concat}
 
-                shape = (3,) + c_masked.shape[2:] # same
+                # shape = (3,) + c_masked.shape[2:] # same
 
                 
-                samples_ddim, _ = sampler.sample(S=opt.steps,
-                                                    conditioning=c,
-                                                    batch_size=1,
-                                                    shape=shape,
-                                                    # maask=cc_mask,
-                                                    verbose=False)
+                # samples_ddim, _ = sampler.sample(S=opt.steps,
+                #                                     conditioning=c,
+                #                                     batch_size=1,
+                #                                     shape=shape,
+                #                                     # maask=cc_mask,
+                #                                     verbose=False)
 
-                x_samples_ddim = model.decode_first_stage(samples_ddim)
+                # x_samples_ddim = model.decode_first_stage(samples_ddim)
 
-                image = torch.clamp((batch["image"]+1.0)/2.0,
-                                    min=0.0, max=1.0)
-                mask = torch.clamp((batch["mask"]+1.0)/2.0,
-                                    min=0.0, max=1.0)
+                # image = torch.clamp((batch["image"]+1.0)/2.0,
+                #                     min=0.0, max=1.0)
+                # mask = torch.clamp((batch["mask"]+1.0)/2.0,
+                #                     min=0.0, max=1.0)
                 
-                masked_image = torch.clamp((batch["masked_image"]+1.0)/2.0,
-                                    min=0.0, max=1.0)
+                # masked_image = torch.clamp((batch["masked_image"]+1.0)/2.0,
+                #                     min=0.0, max=1.0)
                 
-                predicted_image = torch.clamp((x_samples_ddim+1.0)/2.0,
-                                                min=0.0, max=1.0)
+                # predicted_image = torch.clamp((x_samples_ddim+1.0)/2.0,
+                #                                 min=0.0, max=1.0)
 
 
-                inpainted = (1-mask)*image+mask*predicted_image
+                # inpainted = (1-mask)*image+mask*predicted_image
                 
-                inpainted = inpainted.cpu().numpy().transpose(0,2,3,1)[0]*255
+                # inpainted = inpainted.cpu().numpy().transpose(0,2,3,1)[0]*255
                 
-                predicted_image = predicted_image.cpu().numpy().transpose(0,2,3,1)[0]*255
-                print("Save in %s" % outpath)
+                # predicted_image = predicted_image.cpu().numpy().transpose(0,2,3,1)[0]*255
+                # print("Save in %s" % outpath)
                 
-                mask = mask.cpu().numpy().transpose(0,2,3,1)[0]*255
-                image = image.cpu().numpy().transpose(0,2,3,1)[0]*255
-                masked_image = masked_image.cpu().numpy().transpose(0,2,3,1)[0]*255
+                # mask = mask.cpu().numpy().transpose(0,2,3,1)[0]*255
+                # image = image.cpu().numpy().transpose(0,2,3,1)[0]*255
+                # masked_image = masked_image.cpu().numpy().transpose(0,2,3,1)[0]*255
                 
-                # image_to_print = plot_row_original_mask_output([{"masked_image":masked_image, "image":image, "predicted_image":predicted_image}], image_size = 512)
-                # Image.fromarray(image_to_print.astype(np.uint8)).save(outpath)
-                Image.fromarray(inpainted.astype(np.uint8)).save(outpath)
+                # # image_to_print = plot_row_original_mask_output([{"masked_image":masked_image, "image":image, "predicted_image":predicted_image}], image_size = 512)
+                # # Image.fromarray(image_to_print.astype(np.uint8)).save(outpath)
+                # Image.fromarray(inpainted.astype(np.uint8)).save(outpath)
