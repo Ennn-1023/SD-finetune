@@ -166,7 +166,9 @@ if __name__ == "__main__":
                 decoded_img = model.decode_first_stage(latent_img)
                 predicted_image = (decoded_img.cpu().numpy().transpose(0,2,3,1)[0]+1.0)/2.0*255
                 Image.fromarray(predicted_image.astype(np.uint8)).save(outpath)
-                #exit(0)
+                
+                print("Save predicted image to %s" % outpath)
+                exit(0)  # IGNORE --- for debugging
 
 
 
