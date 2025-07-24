@@ -162,6 +162,13 @@ if __name__ == "__main__":
                 batch = make_batch(image, mask, fixed, device=device, resize_to=opt.resize, white_part=opt.white)
                 
                 # c_masked = model.cond_stage_model.encode(batch["masked_image"])
+                latent_img = model.encode_first_stage(batch["image"])
+                decoded_img = model.decode_first_stage(latent_img)
+                predicted_image = (decoded_img.cpu().numpy().transpose(0,2,3,1)[0]+1)/2.0*255
+                Image.fromarray(predicted_image.astype(np.uint8)).save(outpath)
+                exit(0)
+
+
 
                 c_masked = model.first_stage_model.encode(batch["masked_image"])
                                 
