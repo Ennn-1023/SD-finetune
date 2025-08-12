@@ -139,9 +139,12 @@ class InpaintingBase(Dataset):
             ref_part = np.zeros((224, 224, 3), dtype=image.dtype)
         ref_part = ref_part[None].transpose(0,3,1,2)
         ref_part = torch.from_numpy(ref_part)
-        masked_image = (1-mask)*image if self.masked_emb or not self.inpainted or is_null else masked_image
+        
         masked_image = masked_image[None].transpose(0,3,1,2)
         masked_image = torch.from_numpy(masked_image)
+        if self.masked_emb or not self.inpainted or is_null:
+            masked_image = (1-mask)*image 
+
         # ---
 
         
