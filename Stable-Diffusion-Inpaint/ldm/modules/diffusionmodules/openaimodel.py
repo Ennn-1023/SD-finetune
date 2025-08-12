@@ -338,7 +338,7 @@ class AttentionBlock(nn.Module):
         
         self.norm = normalization(channels)
         # disable LoRA for now
-        apply_lora = False
+        # apply_lora = False
         if apply_lora:
             self.qkv = lora.Conv1d(channels, channels * 3, 1, r=lora_rank)
             self.proj_out = zero_module(lora.Conv1d(channels, channels, 1, r=lora_rank))
@@ -614,6 +614,7 @@ class UNetModel(nn.Module):
                             num_heads=num_heads,
                             num_head_channels=dim_head,
                             use_new_attention_order=use_new_attention_order,
+                            apply_lora=apply_lora,
                         ) if not use_spatial_transformer else SpatialTransformer(
                             ch, num_heads, dim_head, depth=transformer_depth, context_dim=context_dim
                         )
