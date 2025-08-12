@@ -1569,7 +1569,8 @@ class LatentInpaintDiffusion(LatentDiffusion):
 
         # enocde cross attention conditioning
         if self.model.conditioning_key in ['crossattn', 'hybrid']:
-            c_crossattn = cc = rearrange(batch[self.masked_image_key], 'b h w c -> b c h w')\
+            # choose a key to do cross attention
+            c_crossattn = cc = rearrange(batch["ref_part"], 'b h w c -> b c h w')\
                                 .to(memory_format=torch.contiguous_format).float()
             c_crossattn = self.get_learned_conditioning(c_crossattn)
             if self.model.conditioning_key == 'crossattn':

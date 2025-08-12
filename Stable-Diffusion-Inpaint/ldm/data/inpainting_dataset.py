@@ -26,6 +26,7 @@ class InpaintingBase(Dataset):
                  interpolation="bicubic",
                  inpainted=True,
                  random_null=False,
+                 masked_emb=True
                  ):
 
         self.csv_df = pd.read_csv(csv_file)
@@ -39,6 +40,7 @@ class InpaintingBase(Dataset):
         
         self.inpainted = inpainted
         self.random_null = random_null
+        self.masked_emb = masked_emb
 
         self.interpolation = {"linear": PIL.Image.LINEAR,
                               "bilinear": PIL.Image.BILINEAR,
@@ -118,28 +120,39 @@ class InpaintingBase(Dataset):
         # ---changed part---
         is_null = random.random() < 0.2 if self.random_null else False
 
-        if self.inpainted and not is_null:
-            masked_image = np.array(Image.open(fixed_path).convert("RGB"))
-            if masked_image.shape[0]!=resize_to or masked_image.shape[1]!=resize_to:
-                masked_image = cv2.resize(src=masked_image, dsize=(resize_to,resize_to), interpolation = cv2.INTER_AREA)
-            masked_image = masked_image.astype(np.float32)/255.0
-            masked_image = masked_image[None].transpose(0,3,1,2)
-            masked_image = torch.from_numpy(masked_image)
+        masked_image = np.array(Image.open(fixed_path).convert("RGB"))
+        if masked_image.shape[0]!=resize_to or masked_image.shape[1]!=resize_to:
+            masked_image = cv2.resize(src=masked_image, dsize=(resize_to,resize_to), interpolation = cv2.INTER_AREA)
+        masked_image = masked_image.astype(np.float32)/255.0
+        
+        
+
+        # 找出 mask 中為 1 的最小矩形範圍
+        coords = np.argwhere(mask.numpy()[0, 0] == 1)  # shape: [num_points, 2]
+        if coords.size > 0 or is_null:
+            y_min, x_min = coords.min(axis=0)
+            y_max, x_max = coords.max(axis=0) + 1  # +1 因為 slicing 不包含結尾
+            # 裁剪 image 對應的矩形區域
+            ref_part = masked_image[y_min:y_max, x_min:x_max, :]
+            # ref_part = cv2.resize(ref_part, (224, 224), interpolation=cv2.INTER_AREA)
         else:
-            masked_image = (1-mask)*image
+            ref_part = np.zeros((224, 224, 3), dtype=image.dtype)
+        ref_part = ref_part[None].transpose(0,3,1,2)
+        ref_part = torch.from_numpy(ref_part)
+        masked_image = (1-mask)*image if self.masked_emb or not self.inpainted or is_null else masked_image
+        masked_image = masked_image[None].transpose(0,3,1,2)
+        masked_image = torch.from_numpy(masked_image)
         # ---
 
         
 
-
-        batch = {"image": image, "mask": mask, "masked_image": masked_image}
+        batch = {"image": image, "mask": mask, "masked_image": masked_image, "ref_part": ref_part}
 
         for k in batch:
-            batch[k] = batch[k]*2.0-1.0
-            # print(batch[k].shape)
             if k=="mask":
                 batch[k] = torch.squeeze(batch[k], dim=1) # we are in get item here, so one at a time
             else:
+                batch[k] = batch[k]*2.0-1.0
                 batch[k] = torch.squeeze(batch[k], dim=0)
             # print(batch[k].shape)
             batch[k] = rearrange(batch[k], 'c h w -> h w c')
