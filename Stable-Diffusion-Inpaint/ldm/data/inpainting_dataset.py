@@ -134,7 +134,7 @@ class InpaintingBase(Dataset):
             y_max, x_max = coords.max(axis=0) + 1  # +1 因為 slicing 不包含結尾
             # 裁剪 image 對應的矩形區域
             ref_part = masked_image[y_min:y_max, x_min:x_max, :]
-            # ref_part = cv2.resize(ref_part, (224, 224), interpolation=cv2.INTER_AREA)
+            ref_part = cv2.resize(ref_part, (224, 224), interpolation=cv2.INTER_AREA)
         else:
             ref_part = np.zeros((224, 224, 3), dtype=image.dtype)
         ref_part = ref_part[None].transpose(0,3,1,2)
