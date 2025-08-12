@@ -207,6 +207,7 @@ class FrozenClipImageEmbedder(nn.Module):
         ):
         super().__init__()
         self.model, _ = clip.load(name=model, device=device, jit=jit)
+        print(f'Using CLIP model {model} for image encoding.')
 
         self.antialias = antialias
 
