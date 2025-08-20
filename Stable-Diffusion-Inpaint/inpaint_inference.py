@@ -194,7 +194,7 @@ if __name__ == "__main__":
                                                     conditioning=c,
                                                     batch_size=1,
                                                     shape=shape,
-                                                    # maask=cc_mask,
+                                                    mask=cc_mask,
                                                     verbose=False)
 
                 x_samples_ddim = model.decode_first_stage(samples_ddim)
