@@ -152,6 +152,7 @@ if __name__ == "__main__":
     os.makedirs(opt.outdir, exist_ok=True)
     outdir_cat = opt.outdir + "_cat"
     os.makedirs(outdir_cat, exist_ok=True)
+    print("save to %s and %s" % (opt.outdir, outdir_cat))
     
     scope = model.ema_scope if opt.ema else suppress
     ema_prefix = "EMA" if opt.ema else "NOT_EMA"
