@@ -150,6 +150,7 @@ if __name__ == "__main__":
     sampler = DDIMSampler(model)
 
     os.makedirs(opt.outdir, exist_ok=True)
+    outdir_cat = opt.outdir + "_cat"
     
     scope = model.ema_scope if opt.ema else suppress
     ema_prefix = "EMA" if opt.ema else "NOT_EMA"
@@ -159,6 +160,7 @@ if __name__ == "__main__":
             for image, mask, fixed in tqdm(zip(images, masks, fixeds)):
                 #outpath = os.path.join(opt.outdir, "%s_%s_%s_%s.jpg" % (os.path.split(image)[1].split(".")[0], opt.prefix, ema_prefix, os.path.basename(opt.ckpt)))
                 outpath = os.path.join(opt.outdir, os.path.basename(image))
+                outpath_cat = os.path.join(outdir_cat, os.path.basename(image))
                 batch = make_batch(image, mask, fixed, device=device, resize_to=opt.resize, white_part=opt.white)
                 
 
@@ -223,5 +225,5 @@ if __name__ == "__main__":
                 
                 # image_to_print = plot_row_original_mask_output([{"masked_image":masked_image, "image":image, "predicted_image":predicted_image}], image_size = 512)
                 # Image.fromarray(image_to_print.astype(np.uint8)).save(outpath)
-                # Image.fromarray(predicted_image.astype(np.uint8)).save(outpath)
-                Image.fromarray(inpainted.astype(np.uint8)).save(outpath)
+                Image.fromarray(predicted_image.astype(np.uint8)).save(outpath)
+                Image.fromarray(inpainted.astype(np.uint8)).save(outpath_cat)
